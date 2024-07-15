@@ -1,9 +1,8 @@
-#include <stdlib.h>
-
 #include "complex_numbers.h"
+#include "../smart_allocation/smart_allocation.h"
 
 struct complex *complex_create_ptr(const float real, const float imaginary) {
-    struct complex *temp = (struct complex *)calloc(1, sizeof(struct complex));
+    struct complex *temp = (struct complex *)smart_allocate(1, sizeof(struct complex));
     temp->real = real;
     temp->imaginary = imaginary;
     return temp;

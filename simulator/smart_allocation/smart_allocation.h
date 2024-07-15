@@ -5,7 +5,7 @@
 
 void smart_allocation_setup();
 
-void *smart_allocate(const size_t size, const unsigned int num);
+void *smart_allocate(const unsigned int num, const size_t size);
 
 void smart_allocation_free();
 
