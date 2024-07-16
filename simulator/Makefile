@@ -1,5 +1,5 @@
-main.out: complex_numbers.o linear_algebra.o smart_allocation.o
-	gcc main.c complex_numbers.o linear_algebra.o smart_allocation.o -o main.out
+main.out: main.c complex_numbers.o linear_algebra.o smart_allocation.o
+	gcc main.c complex_numbers.o linear_algebra.o smart_allocation.o -o main.out -lm
 
 complex_numbers.o: complex_numbers/complex_numbers.c complex_numbers/complex_numbers.h
 	gcc -c complex_numbers/complex_numbers.c -o complex_numbers.o
