@@ -9,6 +9,24 @@ struct matrix {
     struct complex **fields;
 };
 
+typedef struct matrix vector;
+typedef struct matrix dual_vector;
+
 struct matrix *matrix_create(const unsigned int rows, const unsigned int columns);
+struct matrix *matrix_create_empty(const unsigned int rows, const unsigned int columns);
+
+void matrix_print(const struct matrix * const m);
+
+struct matrix *matrix_add(const struct matrix * const m1, const struct matrix * const m2);
+struct matrix *matrix_sub(const struct matrix * const m1, const struct matrix * const m2);
+struct matrix *matrix_mul(const struct matrix * const m1, const struct matrix * const m2);
+struct matrix *matrix_mul_scalar(const struct complex s, const struct matrix * const m);
+
+vector *vector_create();
+vector *vector_create_init(struct complex num1, struct complex num2);
+
+dual_vector *vector_get_dual(vector const * const v);
+
+struct complex vector_inner_product(const vector * const v1, const vector * const v2);
 
 #endif
