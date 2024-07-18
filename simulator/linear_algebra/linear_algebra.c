@@ -39,7 +39,7 @@ struct matrix *matrix_add(const struct matrix * const m1, const struct matrix * 
     if(!m1 || !m2) return NULL;
     if(m1->rows != m2->rows || m1->columns != m2->columns) return NULL;
 
-    struct matrix *result = matrix_create(m1->rows, m2->columns);
+    struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
         for(unsigned int j = 0; j < m1->columns; j++) {
             result->fields[i][j] = complex_add(m1->fields[i][j], m2->fields[i][j]);
@@ -51,7 +51,7 @@ struct matrix *matrix_sub(const struct matrix * const m1, const struct matrix * 
     if(!m1 || !m2) return NULL;
     if(m1->rows != m2->rows || m1->columns != m2->columns) return NULL;
 
-    struct matrix *result = matrix_create(m1->rows, m2->columns);
+    struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
         for(unsigned int j = 0; j < m1->columns; j++) {
             result->fields[i][j] = complex_sub(m1->fields[i][j], m2->fields[i][j]);
@@ -73,9 +73,17 @@ static struct complex matrix_get_field_mul_value(const struct matrix * const m1,
 }
 struct matrix *matrix_mul(const struct matrix * const m1, const struct matrix * const m2) {
     if(!m1 || !m2) return NULL;
+
+    if(m1->rows == 1 && m1->columns == 1) {
+        return matrix_mul_scalar(m1->fields[0][0], m2);
+    }
+    if(m2->rows == 1 && m2->columns == 1) {
+        return matrix_mul_scalar(m2->fields[0][0], m1);
+    }
+
     if(m1->columns != m2->rows) return NULL;
 
-    struct matrix *result = matrix_create(m1->rows, m2->columns);
+    struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
         for(unsigned int j = 0; j < m2->columns; j++) {
             result->fields[i][j] = matrix_get_field_mul_value(m1, m2, i, j);
@@ -86,10 +94,42 @@ struct matrix *matrix_mul(const struct matrix * const m1, const struct matrix * 
 struct matrix *matrix_mul_scalar(const struct complex s, const struct matrix * const m) {
     if(!m) return NULL;
 
-    struct matrix *result = matrix_create(m->rows, m->columns);
+    struct matrix *result = matrix_create_empty(m->rows, m->columns);
     for(unsigned int i = 0; i < m->rows; i++) {
         for(unsigned int j = 0; j < m->columns; j++) {
             result->fields[i][j] = complex_mul(s, m->fields[i][j]);
+        }
+    }
+    return result;
+}
+
+struct matrix *matrix_tensor_product(const struct matrix * const m1, 
+                                        const struct matrix * const m2) 
+{
+    if(!m1 || !m2) return NULL;
+
+    struct matrix *result = matrix_create_empty(m1->rows * m2->rows, 
+                                                    m1->columns * m2->columns);
+    for(unsigned int i = 0; i < result->rows; i++) {
+        for(unsigned int j = 0; j < result->columns; j++) {
+            result->fields[i][j] = complex_mul(
+                m1->fields[i / m2->rows][j / m2->columns], 
+                m2->fields[i % m2->rows][j % m2->columns]
+            );
+        }
+    }
+    return result;
+}
+
+struct matrix *matrix_get_adjoint(const struct matrix * const m) {
+    if(!m) return NULL;
+
+    struct matrix *result = matrix_create_empty(m->columns, m->rows);
+    for(unsigned int i = 0; i < m->columns; i++) {
+        for(unsigned int j = 0; j < m->rows; j++) {
+            struct complex num = m->fields[j][i];
+            num = complex_get_conjugate(num);
+            result->fields[i][j] = num;
         }
     }
     return result;
@@ -109,10 +149,7 @@ vector *vector_create_init(struct complex num1, struct complex num2) {
 dual_vector *vector_get_dual(const vector * const v) {
     if(!v) return NULL;
 
-    dual_vector *result = matrix_create_empty(1, v->rows);
-    for(unsigned int i = 0; i < v->rows; i++) {
-        result->fields[0][i] = complex_get_conjugate(v->fields[i][0]);
-    }
+    dual_vector *result = matrix_get_adjoint(v);
     return result;
 }
 

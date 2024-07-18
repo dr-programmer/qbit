@@ -21,7 +21,14 @@ int main() {
     struct complex inner_product = vector_inner_product(v1, v1);
     printf("\n");
     complex_print(inner_product);
+    printf("\n\n");
+
+    struct matrix *tensor = matrix_tensor_product(v1, v1);
+    matrix_print(tensor);
     printf("\n");
+
+    tensor = vector_get_dual(tensor);
+    matrix_print(tensor);
 
     smart_allocation_free();
     return 0;
