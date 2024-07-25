@@ -16,8 +16,8 @@ quantum_gate *quantum_gate_create_pauli_y();
 quantum_gate *quantum_gate_create_pauli_z();
 
 // In the following functions and any other function that requires an angle 
-// (unless specifically mentioned)
-// in this project the angle should be given in radians.
+// in this project the angle should be given in radians
+// (unless specifically mentioned).
 
 // The set of any two of the following three gates is a universal set for all 1-qubit gates
 quantum_gate *quantum_gate_create_rotation_x(const float angle);
