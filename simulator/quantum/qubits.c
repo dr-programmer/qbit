@@ -14,6 +14,7 @@ quantum_state *quantum_state_create(const unsigned int basis, const unsigned int
 
 qubit *qubit_create() {
     qubit *temp = vector_create();
+    temp->fields[0][0] = complex_create(1, 0);
     return temp;
 }
 qubit *qubit_create_init(const struct complex a0, const struct complex a1) {

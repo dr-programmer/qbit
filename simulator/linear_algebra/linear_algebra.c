@@ -137,7 +137,6 @@ struct matrix *matrix_get_adjoint(const struct matrix * const m) {
 
 vector *vector_create() {
     vector *temp = matrix_create_empty(2, 1);
-    temp->fields[0][0] = complex_create(1, 0);
     return temp;
 }
 vector *vector_create_init(struct complex num1, struct complex num2) {
