@@ -1,0 +1,87 @@
+Terminals unused in grammar
+
+    TOKEN_SUBSCRIPT
+    TOKEN_AND
+    TOKEN_COMPLEX_LITERAL
+    TOKEN_IDENT
+    TOKEN_PLUS
+    TOKEN_MINUS
+    TOKEN_MUL
+    TOKEN_DIV
+    TOKEN_MODULUS
+    TOKEN_LESS
+    TOKEN_LPAREN
+    TOKEN_RPAREN
+    TOKEN_LCRBR
+    TOKEN_RCRBR
+    TOKEN_LSQBR
+    TOKEN_RSQBR
+    TOKEN_COMMA
+    TOKEN_COLON
+    TOKEN_SEMI
+    TOKEN_ERROR
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: ε
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    TOKEN_SUBSCRIPT (258)
+    TOKEN_AND (259)
+    TOKEN_COMPLEX_LITERAL (260)
+    TOKEN_IDENT (261)
+    TOKEN_PLUS (262)
+    TOKEN_MINUS (263)
+    TOKEN_MUL (264)
+    TOKEN_DIV (265)
+    TOKEN_MODULUS (266)
+    TOKEN_LESS (267)
+    TOKEN_LPAREN (268)
+    TOKEN_RPAREN (269)
+    TOKEN_LCRBR (270)
+    TOKEN_RCRBR (271)
+    TOKEN_LSQBR (272)
+    TOKEN_RSQBR (273)
+    TOKEN_COMMA (274)
+    TOKEN_COLON (275)
+    TOKEN_SEMI (276)
+    TOKEN_ERROR (277)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (23)
+        on left: 0
+    program (24)
+        on left: 1
+        on right: 0
+
+
+State 0
+
+    0 $accept: • program $end
+
+    $default  reduce using rule 1 (program)
+
+    program  go to state 1
+
+
+State 1
+
+    0 $accept: program • $end
+
+    $end  shift, and go to state 2
+
+
+State 2
+
+    0 $accept: program $end •
+
+    $default  accept

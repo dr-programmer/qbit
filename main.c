@@ -6,6 +6,10 @@
 #include "linear_algebra/linear_algebra.h"
 #include "qubits.h"
 #include "operators.h"
+#include "algorithms.h"
+
+extern FILE *yyin;
+extern int yyparse();
 
 int main() {
     smart_allocation_setup();
@@ -64,6 +68,8 @@ int main() {
         basis_1
     );
     matrix_print(hadamard_minus);
+
+    printf("\nDeutsch algorithm: %hd \n", algorithm_deutsch(quantum_gate_create_cnot()));
 
     smart_allocation_free();
     return 0;

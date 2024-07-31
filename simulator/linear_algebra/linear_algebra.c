@@ -135,6 +135,38 @@ struct matrix *matrix_get_adjoint(const struct matrix * const m) {
     return result;
 }
 
+struct complex matrix_get_trace(const struct matrix * const m) {
+    if(!m) return complex_create(0, 0);
+    if(m->rows != m->columns) complex_create(0, 0);
+
+    struct complex result = complex_create(0, 0);
+    for(unsigned int i = 0; i < m->rows; i++) {
+        result = complex_add(m->fields[i][i], result);
+    }
+
+    return result;
+}
+struct matrix *matrix_get_partial_trace(const struct matrix * const m, 
+                                            const unsigned int space_index, 
+                                            const unsigned int spaces) 
+{
+    if(!m) return NULL;
+    if(m->rows != m->columns) return NULL;
+
+    unsigned int space_size = m->rows / spaces;
+    struct matrix *result = matrix_create_empty(space_size, space_size);
+    for(unsigned int i = 0; i < space_size; i++) {
+        for(unsigned int j = 0; j < space_size; j++) {
+            result->fields[i][j] = complex_add(
+                m->fields[i * (space_index + 1)][j * (space_index + 1)], 
+                m->fields[i + (spaces - space_index)][j + (spaces - space_index)]
+            );
+        }
+    }
+
+    return result;
+}
+
 vector *vector_create() {
     vector *temp = matrix_create_empty(2, 1);
     return temp;

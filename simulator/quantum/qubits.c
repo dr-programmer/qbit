@@ -45,3 +45,38 @@ qm_result *quantum_state_measure(const quantum_state * const q) {
     }
     return result;
 }
+qm_result *quantum_state_measure_density_matrix(const quantum_operator * const d) {
+    if(!d) return NULL;
+
+    float random_value = (float)rand() / RAND_MAX;
+    float current_state_probabilty = 0;
+    qm_result *result = NULL;
+    for(unsigned int i = 0; i < d->rows; i++) {
+        // Here we get the probabilty by the expression: Tr(|i><i|d)
+        quantum_state *basis = quantum_state_create(i, d->rows);
+        quantum_operator *basis_matrix = matrix_mul(basis, vector_get_dual(basis));
+        current_state_probabilty += matrix_get_trace(matrix_mul(basis_matrix, d)).real;
+        if(random_value < current_state_probabilty) {
+            result = qm_result_create(basis, i);
+            break;
+        }
+    }
+    return result;
+}
+qm_result *quantum_state_measure_subsystem(const quantum_state * const q, 
+                                                const unsigned int system_index, 
+                                                const unsigned int systems) 
+{
+    if(!q) return NULL;
+
+    quantum_operator *density_matrix = matrix_mul(
+        q,
+        vector_get_dual(q)
+    );
+    quantum_operator *r_density_matrix = matrix_get_partial_trace(
+        density_matrix, 
+        systems - (system_index + 1),
+        systems
+    );
+    return quantum_state_measure_density_matrix(r_density_matrix);
+}

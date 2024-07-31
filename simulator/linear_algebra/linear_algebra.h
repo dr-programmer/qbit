@@ -27,6 +27,11 @@ struct matrix *matrix_tensor_product(const struct matrix * const m1,
 
 struct matrix *matrix_get_adjoint(const struct matrix * const m);
 
+struct complex matrix_get_trace(const struct matrix * const m);
+struct matrix *matrix_get_partial_trace(const struct matrix * const m, 
+                                            const unsigned int space_index, 
+                                            const unsigned int spaces);
+
 vector *vector_create();
 vector *vector_create_init(struct complex num1, struct complex num2);
 
