@@ -29,12 +29,12 @@ circuit algorithm_deutsch (gate PARAM_GATE):
 Quantum circuit-like version:
 
 PARAM_GATE (
-    |0>*<0| @ I + |1>*<1| @ X
+    |0>*<0| @ (I) + |1>*<1| @ (X)
 )
 
 {
-    {1 | 0}              ?? |0>
-    {1/(#2) | -1/(#2)}   ?? |->  ?? (H)|1>
+    {1 | 0}              ?? {|0>}
+    {1/(#2) | -1/(#2)}   ?? {|->}  ?? {(H)|1>}
 } 
     -> (H)[0]            ?? The same as: (H)[0] && (I)[1]
     -> (PARAM_GATE) 

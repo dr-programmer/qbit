@@ -44,6 +44,17 @@
 #if YYDEBUG
 extern int yydebug;
 #endif
+/* "%code requires" blocks.  */
+#line 15 "q_assembly/parser/parser.y"
+
+
+#include "colors.h"
+#include "structures.h"
+#include "smart_allocation.h"
+#include "complex_numbers.h"
+
+
+#line 58 "q_assembly/parser//token.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -54,26 +65,31 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    TOKEN_SUBSCRIPT = 258,         /* TOKEN_SUBSCRIPT  */
-    TOKEN_AND = 259,               /* TOKEN_AND  */
-    TOKEN_COMPLEX_LITERAL = 260,   /* TOKEN_COMPLEX_LITERAL  */
-    TOKEN_IDENT = 261,             /* TOKEN_IDENT  */
-    TOKEN_PLUS = 262,              /* TOKEN_PLUS  */
-    TOKEN_MINUS = 263,             /* TOKEN_MINUS  */
-    TOKEN_MUL = 264,               /* TOKEN_MUL  */
-    TOKEN_DIV = 265,               /* TOKEN_DIV  */
-    TOKEN_MODULUS = 266,           /* TOKEN_MODULUS  */
-    TOKEN_LESS = 267,              /* TOKEN_LESS  */
-    TOKEN_LPAREN = 268,            /* TOKEN_LPAREN  */
-    TOKEN_RPAREN = 269,            /* TOKEN_RPAREN  */
-    TOKEN_LCRBR = 270,             /* TOKEN_LCRBR  */
-    TOKEN_RCRBR = 271,             /* TOKEN_RCRBR  */
-    TOKEN_LSQBR = 272,             /* TOKEN_LSQBR  */
-    TOKEN_RSQBR = 273,             /* TOKEN_RSQBR  */
-    TOKEN_COMMA = 274,             /* TOKEN_COMMA  */
-    TOKEN_COLON = 275,             /* TOKEN_COLON  */
-    TOKEN_SEMI = 276,              /* TOKEN_SEMI  */
-    TOKEN_ERROR = 277              /* TOKEN_ERROR  */
+    TOKEN_RANGE = 258,             /* TOKEN_RANGE  */
+    TOKEN_SEPARATOR = 259,         /* TOKEN_SEPARATOR  */
+    TOKEN_NEXT = 260,              /* TOKEN_NEXT  */
+    TOKEN_AND = 261,               /* TOKEN_AND  */
+    TOKEN_COMPLEX_LITERAL = 262,   /* TOKEN_COMPLEX_LITERAL  */
+    TOKEN_IDENT = 263,             /* TOKEN_IDENT  */
+    TOKEN_PLUS = 264,              /* TOKEN_PLUS  */
+    TOKEN_MINUS = 265,             /* TOKEN_MINUS  */
+    TOKEN_MUL = 266,               /* TOKEN_MUL  */
+    TOKEN_DIV = 267,               /* TOKEN_DIV  */
+    TOKEN_MODULUS = 268,           /* TOKEN_MODULUS  */
+    TOKEN_SQRT = 269,              /* TOKEN_SQRT  */
+    TOKEN_TENSOR_PRODUCT = 270,    /* TOKEN_TENSOR_PRODUCT  */
+    TOKEN_LESS = 271,              /* TOKEN_LESS  */
+    TOKEN_GREATER = 272,           /* TOKEN_GREATER  */
+    TOKEN_LPAREN = 273,            /* TOKEN_LPAREN  */
+    TOKEN_RPAREN = 274,            /* TOKEN_RPAREN  */
+    TOKEN_LCRBR = 275,             /* TOKEN_LCRBR  */
+    TOKEN_RCRBR = 276,             /* TOKEN_RCRBR  */
+    TOKEN_LSQBR = 277,             /* TOKEN_LSQBR  */
+    TOKEN_RSQBR = 278,             /* TOKEN_RSQBR  */
+    TOKEN_COMMA = 279,             /* TOKEN_COMMA  */
+    TOKEN_COLON = 280,             /* TOKEN_COLON  */
+    TOKEN_SEMI = 281,              /* TOKEN_SEMI  */
+    TOKEN_ERROR = 282              /* TOKEN_ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -82,11 +98,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 15 "q_assembly/parser/parser.y"
+#line 24 "q_assembly/parser/parser.y"
 
+    struct decl *decl;
+    char *str;
+    struct complex complex;
 
-
-#line 90 "q_assembly/parser//token.h"
+#line 108 "q_assembly/parser//token.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

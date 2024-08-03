@@ -13,12 +13,14 @@ LETTERS [a-zA-Z]
 
 (" "|\t)
 "\n"        {line++;}
-\-\>        {return TOKEN_SUBSCRIPT;}
+\-\>        {return TOKEN_NEXT;}
 \+          {return TOKEN_PLUS;}
 \-          {return TOKEN_MINUS;}
 \*          {return TOKEN_MUL;}
 \/          {return TOKEN_DIV;}
 \%          {return TOKEN_MODULUS;}
+\#          {return TOKEN_SQRT;}
+\@          {return TOKEN_TENSOR_PRODUCT;}
 \&\&        {return TOKEN_AND;}
 \<\?        {BEGIN(multiline_comment);}
 <multiline_comment>[^\?]*
@@ -26,7 +28,10 @@ LETTERS [a-zA-Z]
 <multiline_comment>\?\>     {BEGIN(INITIAL);}
 \?\?.*"\n"
 "<"         {return TOKEN_LESS;}
-{DIGITS}+\.{DIGITS}+   {return TOKEN_COMPLEX_LITERAL;}
+>           {return TOKEN_GREATER;}
+\.{3}       {return TOKEN_RANGE;}
+\|          {return TOKEN_SEPARATOR;}
+{DIGITS}+(\.{DIGITS}+)?i?   {return TOKEN_COMPLEX_LITERAL;}
 ({LETTERS}|_)({LETTERS}|{DIGITS}|_)*  {return TOKEN_IDENT;}
 \(          {return TOKEN_LPAREN;}
 \)          {return TOKEN_RPAREN;}

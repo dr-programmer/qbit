@@ -7,11 +7,13 @@
 #include "qubits.h"
 #include "operators.h"
 #include "algorithms.h"
+#include "colors.h"
+#include "error.h"
 
 extern FILE *yyin;
 extern int yyparse();
 
-int main() {
+int main(int argc, char **argv) {
     smart_allocation_setup();
 
     vector *v1 = vector_create();
@@ -70,6 +72,19 @@ int main() {
     matrix_print(hadamard_minus);
 
     printf("\nDeutsch algorithm: %hd \n", algorithm_deutsch(quantum_gate_create_cnot()));
+
+    yyin = fopen(argv[1], "r");
+    if(yyin == NULL) {
+        fprintf(stderr, "Error opening file %s \n", argv[1]);
+        exit(ERROR_OPENING_FILE);
+    }
+
+    if(yyparse() == 0) {
+        printf("Parse "GRN"successful"RESET"! \n");
+    }
+    else {
+        printf("Parse "RED"failed"RESET". \n");
+    }
 
     smart_allocation_free();
     return 0;
