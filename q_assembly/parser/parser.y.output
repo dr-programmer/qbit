@@ -1,6 +1,5 @@
 Terminals unused in grammar
 
-    TOKEN_AND
     TOKEN_COLON
     TOKEN_SEMI
     TOKEN_ERROR
@@ -58,26 +57,31 @@ Grammar
 
    32 reg: TOKEN_LCRBR fields TOKEN_RCRBR
 
-   33 circuit: TOKEN_NEXT expr circuit
-   34        | TOKEN_NEXT expr subsystem circuit
-   35        | TOKEN_NEXT TOKEN_LESS circuit
-   36        | TOKEN_NEXT TOKEN_LESS subsystem circuit
-   37        | ε
+   33 circuit: TOKEN_NEXT c_step circuit
+   34        | ε
 
-   38 subsystem: TOKEN_LSQBR number TOKEN_RSQBR
-   39          | TOKEN_LSQBR range TOKEN_RSQBR
+   35 c_step: expr
+   36       | expr subsystem concurrent_gate
+   37       | TOKEN_LESS
+   38       | TOKEN_LESS subsystem concurrent_gate
 
-   40 range: number TOKEN_RANGE number
+   39 subsystem: TOKEN_LSQBR number TOKEN_RSQBR
+   40          | TOKEN_LSQBR range TOKEN_RSQBR
+
+   41 range: number TOKEN_RANGE number
+
+   42 concurrent_gate: TOKEN_AND c_step
+   43                | ε
 
 
 Terminals, with rules where they appear
 
     $end (0) 0
     error (256)
-    TOKEN_RANGE (258) 40
+    TOKEN_RANGE (258) 41
     TOKEN_SEPARATOR (259) 21 22 28
-    TOKEN_NEXT (260) 33 34 35 36
-    TOKEN_AND (261)
+    TOKEN_NEXT (260) 33
+    TOKEN_AND (261) 42
     TOKEN_COMPLEX_LITERAL (262) 24
     TOKEN_IDENT (263) 7
     TOKEN_PLUS (264) 9
@@ -87,14 +91,14 @@ Terminals, with rules where they appear
     TOKEN_MODULUS (268) 14
     TOKEN_SQRT (269) 19
     TOKEN_TENSOR_PRODUCT (270) 15
-    TOKEN_LESS (271) 22 35 36
+    TOKEN_LESS (271) 22 37 38
     TOKEN_GREATER (272) 21
     TOKEN_LPAREN (273) 4 5 17 23
     TOKEN_RPAREN (274) 4 5 17 23
     TOKEN_LCRBR (275) 6 32
     TOKEN_RCRBR (276) 6 32
-    TOKEN_LSQBR (277) 38 39
-    TOKEN_RSQBR (278) 38 39
+    TOKEN_LSQBR (277) 39 40
+    TOKEN_RSQBR (278) 39 40
     TOKEN_COMMA (279) 27
     TOKEN_COLON (280)
     TOKEN_SEMI (281)
@@ -117,42 +121,48 @@ Nonterminals, with rules where they appear
     name <str> (32)
         on left: 7
         on right: 4 5 17
-    expr (33)
+    expr <expr> (33)
         on left: 8
-        on right: 4 23 25 33 34
-    algebra (34)
+        on right: 4 23 25 35 36
+    algebra <expr> (34)
         on left: 9 10 11
         on right: 8 9 10
-    term (35)
+    term <expr> (35)
         on left: 12 13 14 15 16
         on right: 9 10 11 12 13 14 15
-    factor (36)
+    factor <expr> (36)
         on left: 17 18 19 20 21 22 23
         on right: 12 13 14 15 16 18 19
     number <complex> (37)
         on left: 24
-        on right: 20 21 22 38 40
-    fields (38)
+        on right: 20 21 22 39 41
+    fields <expr> (38)
         on left: 25 26
         on right: 5 27 28 32
-    next_expr (39)
+    next_expr <expr> (39)
         on left: 27 28 29
         on right: 25
-    registers (40)
+    registers <expr> (40)
         on left: 30 31
         on right: 6 30
-    reg (41)
+    reg <expr> (41)
         on left: 32
         on right: 30
-    circuit (42)
-        on left: 33 34 35 36 37
-        on right: 6 33 34 35 36
-    subsystem (43)
-        on left: 38 39
-        on right: 34 36
-    range (44)
-        on left: 40
-        on right: 39
+    circuit <expr> (42)
+        on left: 33 34
+        on right: 6 33
+    c_step <expr> (43)
+        on left: 35 36 37 38
+        on right: 33 42
+    subsystem <expr> (44)
+        on left: 39 40
+        on right: 36 38
+    range <expr> (45)
+        on left: 41
+        on right: 40
+    concurrent_gate <expr> (46)
+        on left: 42 43
+        on right: 36 38
 
 
 State 0
@@ -444,7 +454,7 @@ State 25
 
     TOKEN_NEXT  shift, and go to state 45
 
-    $default  reduce using rule 37 (circuit)
+    $default  reduce using rule 34 (circuit)
 
     circuit  go to state 46
 
@@ -669,10 +679,7 @@ State 44
 
 State 45
 
-   33 circuit: TOKEN_NEXT • expr circuit
-   34        | TOKEN_NEXT • expr subsystem circuit
-   35        | TOKEN_NEXT • TOKEN_LESS circuit
-   36        | TOKEN_NEXT • TOKEN_LESS subsystem circuit
+   33 circuit: TOKEN_NEXT • c_step circuit
 
     TOKEN_SEPARATOR        shift, and go to state 13
     TOKEN_COMPLEX_LITERAL  shift, and go to state 14
@@ -686,6 +693,7 @@ State 45
     term     go to state 21
     factor   go to state 22
     number   go to state 23
+    c_step   go to state 63
 
 
 State 46
@@ -814,38 +822,45 @@ State 60
 State 61
 
    22 factor: TOKEN_LESS • number TOKEN_SEPARATOR
-   35 circuit: TOKEN_NEXT TOKEN_LESS • circuit
-   36        | TOKEN_NEXT TOKEN_LESS • subsystem circuit
+   37 c_step: TOKEN_LESS •
+   38       | TOKEN_LESS • subsystem concurrent_gate
 
-    TOKEN_NEXT             shift, and go to state 45
     TOKEN_COMPLEX_LITERAL  shift, and go to state 14
-    TOKEN_LSQBR            shift, and go to state 63
+    TOKEN_LSQBR            shift, and go to state 64
 
-    $default  reduce using rule 37 (circuit)
+    $default  reduce using rule 37 (c_step)
 
     number     go to state 32
-    circuit    go to state 64
     subsystem  go to state 65
 
 
 State 62
 
-   33 circuit: TOKEN_NEXT expr • circuit
-   34        | TOKEN_NEXT expr • subsystem circuit
+   35 c_step: expr •
+   36       | expr • subsystem concurrent_gate
 
-    TOKEN_NEXT   shift, and go to state 45
-    TOKEN_LSQBR  shift, and go to state 63
+    TOKEN_LSQBR  shift, and go to state 64
 
-    $default  reduce using rule 37 (circuit)
+    $default  reduce using rule 35 (c_step)
 
-    circuit    go to state 66
-    subsystem  go to state 67
+    subsystem  go to state 66
 
 
 State 63
 
-   38 subsystem: TOKEN_LSQBR • number TOKEN_RSQBR
-   39          | TOKEN_LSQBR • range TOKEN_RSQBR
+   33 circuit: TOKEN_NEXT c_step • circuit
+
+    TOKEN_NEXT  shift, and go to state 45
+
+    $default  reduce using rule 34 (circuit)
+
+    circuit  go to state 67
+
+
+State 64
+
+   39 subsystem: TOKEN_LSQBR • number TOKEN_RSQBR
+   40          | TOKEN_LSQBR • range TOKEN_RSQBR
 
     TOKEN_COMPLEX_LITERAL  shift, and go to state 14
 
@@ -853,97 +868,116 @@ State 63
     range   go to state 69
 
 
-State 64
-
-   35 circuit: TOKEN_NEXT TOKEN_LESS circuit •
-
-    $default  reduce using rule 35 (circuit)
-
-
 State 65
 
-   36 circuit: TOKEN_NEXT TOKEN_LESS subsystem • circuit
+   38 c_step: TOKEN_LESS subsystem • concurrent_gate
 
-    TOKEN_NEXT  shift, and go to state 45
+    TOKEN_AND  shift, and go to state 70
 
-    $default  reduce using rule 37 (circuit)
+    $default  reduce using rule 43 (concurrent_gate)
 
-    circuit  go to state 70
+    concurrent_gate  go to state 71
 
 
 State 66
 
-   33 circuit: TOKEN_NEXT expr circuit •
+   36 c_step: expr subsystem • concurrent_gate
 
-    $default  reduce using rule 33 (circuit)
+    TOKEN_AND  shift, and go to state 70
+
+    $default  reduce using rule 43 (concurrent_gate)
+
+    concurrent_gate  go to state 72
 
 
 State 67
 
-   34 circuit: TOKEN_NEXT expr subsystem • circuit
+   33 circuit: TOKEN_NEXT c_step circuit •
 
-    TOKEN_NEXT  shift, and go to state 45
-
-    $default  reduce using rule 37 (circuit)
-
-    circuit  go to state 71
+    $default  reduce using rule 33 (circuit)
 
 
 State 68
 
-   38 subsystem: TOKEN_LSQBR number • TOKEN_RSQBR
-   40 range: number • TOKEN_RANGE number
+   39 subsystem: TOKEN_LSQBR number • TOKEN_RSQBR
+   41 range: number • TOKEN_RANGE number
 
-    TOKEN_RANGE  shift, and go to state 72
-    TOKEN_RSQBR  shift, and go to state 73
+    TOKEN_RANGE  shift, and go to state 73
+    TOKEN_RSQBR  shift, and go to state 74
 
 
 State 69
 
-   39 subsystem: TOKEN_LSQBR range • TOKEN_RSQBR
+   40 subsystem: TOKEN_LSQBR range • TOKEN_RSQBR
 
-    TOKEN_RSQBR  shift, and go to state 74
+    TOKEN_RSQBR  shift, and go to state 75
 
 
 State 70
 
-   36 circuit: TOKEN_NEXT TOKEN_LESS subsystem circuit •
+   42 concurrent_gate: TOKEN_AND • c_step
 
-    $default  reduce using rule 36 (circuit)
+    TOKEN_SEPARATOR        shift, and go to state 13
+    TOKEN_COMPLEX_LITERAL  shift, and go to state 14
+    TOKEN_MINUS            shift, and go to state 15
+    TOKEN_SQRT             shift, and go to state 16
+    TOKEN_LESS             shift, and go to state 61
+    TOKEN_LPAREN           shift, and go to state 18
+
+    expr     go to state 62
+    algebra  go to state 20
+    term     go to state 21
+    factor   go to state 22
+    number   go to state 23
+    c_step   go to state 76
 
 
 State 71
 
-   34 circuit: TOKEN_NEXT expr subsystem circuit •
+   38 c_step: TOKEN_LESS subsystem concurrent_gate •
 
-    $default  reduce using rule 34 (circuit)
+    $default  reduce using rule 38 (c_step)
 
 
 State 72
 
-   40 range: number TOKEN_RANGE • number
+   36 c_step: expr subsystem concurrent_gate •
 
-    TOKEN_COMPLEX_LITERAL  shift, and go to state 14
-
-    number  go to state 75
+    $default  reduce using rule 36 (c_step)
 
 
 State 73
 
-   38 subsystem: TOKEN_LSQBR number TOKEN_RSQBR •
+   41 range: number TOKEN_RANGE • number
 
-    $default  reduce using rule 38 (subsystem)
+    TOKEN_COMPLEX_LITERAL  shift, and go to state 14
+
+    number  go to state 77
 
 
 State 74
 
-   39 subsystem: TOKEN_LSQBR range TOKEN_RSQBR •
+   39 subsystem: TOKEN_LSQBR number TOKEN_RSQBR •
 
     $default  reduce using rule 39 (subsystem)
 
 
 State 75
 
-   40 range: number TOKEN_RANGE number •
+   40 subsystem: TOKEN_LSQBR range TOKEN_RSQBR •
 
-    $default  reduce using rule 40 (range)
+    $default  reduce using rule 40 (subsystem)
+
+
+State 76
+
+   42 concurrent_gate: TOKEN_AND c_step •
+
+    $default  reduce using rule 42 (concurrent_gate)
+
+
+State 77
+
+   41 range: number TOKEN_RANGE number •
+
+    $default  reduce using rule 41 (range)

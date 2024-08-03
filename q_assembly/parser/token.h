@@ -54,7 +54,7 @@ extern int yydebug;
 #include "complex_numbers.h"
 
 
-#line 58 "q_assembly/parser//token.h"
+#line 58 "q_assembly/parser/token.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -101,10 +101,11 @@ union YYSTYPE
 #line 24 "q_assembly/parser/parser.y"
 
     struct decl *decl;
+    struct expr *expr;
     char *str;
     struct complex complex;
 
-#line 108 "q_assembly/parser//token.h"
+#line 109 "q_assembly/parser/token.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

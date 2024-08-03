@@ -23,11 +23,14 @@ struct decl *parser_result;
 
 %union {
     struct decl *decl;
+    struct expr *expr;
     char *str;
     struct complex complex;
 };
 
 %type <decl> program decl_list decl
+%type <expr> expr algebra term factor fields next_expr registers reg circuit c_step
+%type <expr> subsystem range concurrent_gate
 %type <str> name
 %type <complex> number
 
@@ -73,16 +76,16 @@ program : decl_list             { parser_result = $1; }
         ;
 
 decl_list
-        : decl decl_list        { $$ = $1; /*$1->next = $2;*/ }
+        : decl decl_list        { $$ = $1; $1->next = $2; }
         |                       { $$ = 0; }
         ;
 
 decl    : name TOKEN_LPAREN expr TOKEN_RPAREN
-                                { $$ = decl_create(); }
+                                { $$ = decl_create($1, $3, 0, 0); }
         | name TOKEN_LPAREN fields TOKEN_RPAREN
-                                { $$ = decl_create(); }
+                                { $$ = decl_create($1, $3, 0, 0); }
         | TOKEN_LCRBR registers TOKEN_RCRBR circuit
-                                { $$ = decl_create(); }
+                                { $$ = decl_create(0, $2, $4, 0); }
         ;
 
 name    : TOKEN_IDENT
@@ -93,36 +96,55 @@ name    : TOKEN_IDENT
                 }
         ;
 
-expr    : algebra               //{ $$ = $1; }
+expr    : algebra               { $$ = $1; }
         ;
 
 algebra : algebra TOKEN_PLUS term
-                                {  }
+                                { $$ = expr_create(EXPR_ADD, $1, $3); }
         | algebra TOKEN_MINUS term
-                                {  }
-        | term                  {  }
+                                { $$ = expr_create(EXPR_SUB, $1, $3); }
+        | term                  { $$ = $1; }
         ;
 
-term    : term TOKEN_MUL factor {  }
-        | term TOKEN_DIV factor {  }
+term    : term TOKEN_MUL factor { $$ = expr_create(EXPR_MUL, $1, $3); }
+        | term TOKEN_DIV factor { $$ = expr_create(EXPR_DIV, $1, $3); }
         | term TOKEN_MODULUS factor
-                                {  }
+                                { $$ = expr_create(EXPR_MODULUS, $1, $3); }
         | term TOKEN_TENSOR_PRODUCT factor
-                                {  }
-        | factor                {  }
+                                { $$ = expr_create(EXPR_TENSOR_PRODUCT, $1, $3); }
+        | factor                { $$ = $1; }
         ;
 
 factor  : TOKEN_LPAREN name TOKEN_RPAREN
-                                {  }
-        | TOKEN_MINUS factor    {  }
-        | TOKEN_SQRT factor     {  }
-        | number                {  }
+                                { $$ = expr_create_name($2); }
+        | TOKEN_MINUS factor    { 
+                                        $$ = expr_create(EXPR_MUL, 
+                                                expr_create_complex_literal(
+                                                        complex_create(-1, 0)
+                                                ), 
+                                                $2
+                                        ); 
+                                }
+        | TOKEN_SQRT factor     { $$ = expr_create(EXPR_SQRT, 0, $2); }
+        | number                { $$ = expr_create_complex_literal($1); }
         | TOKEN_SEPARATOR number TOKEN_GREATER
-                                {  }
+                                { 
+                                        $$ = expr_create(
+                                                EXPR_KET, 
+                                                0, 
+                                                expr_create_complex_literal($2)
+                                        ); 
+                                }
         | TOKEN_LESS number TOKEN_SEPARATOR
-                                {  }
+                                { 
+                                        $$ = expr_create(
+                                                EXPR_BRA, 
+                                                expr_create_complex_literal($2), 
+                                                0
+                                        ); 
+                                }
         | TOKEN_LPAREN expr TOKEN_RPAREN
-                                {  }
+                                { $$ = $2; }
         ;
 
 number  : TOKEN_COMPLEX_LITERAL
@@ -141,47 +163,72 @@ number  : TOKEN_COMPLEX_LITERAL
                         $$ = result; 
                 }
 
-fields  : expr next_expr        {  }
-        |                       {  }
+fields  : expr next_expr        { $$ = expr_create(EXPR_FIELD, $1, $2); }
+        |                       { $$ = 0; }
         ;
 
 next_expr
         : TOKEN_COMMA fields
-                                {  }
+                                { $$ = $2; }
         | TOKEN_SEPARATOR fields
-                                {  }
-        |                       {  }
+                                { $$ = $2; }
+        |                       { $$ = 0; }
         ;
 
 registers
-        : reg registers         {  }
-        |                       {  }
+        : reg registers         { $$ = expr_create(EXPR_REGISTER, $1, $2); }
+        |                       { $$ = 0; }
         ;
 
 reg     : TOKEN_LCRBR fields TOKEN_RCRBR
-                                {  }
+                                { $$ = $2; }
         ;
 
-circuit : TOKEN_NEXT expr circuit
-                                {  }
-        | TOKEN_NEXT expr subsystem circuit
-                                {  }
-        | TOKEN_NEXT TOKEN_LESS circuit
-                                {  }
-        | TOKEN_NEXT TOKEN_LESS subsystem circuit
-                                {  }
-        |                       {  }
+circuit : TOKEN_NEXT c_step circuit
+                                { $$ = expr_create(EXPR_CIRCUIT_STEP, $2, $3); }
+        |                       { $$ = 0; }
+        ;
+
+c_step  : expr                  { $$ = expr_create(EXPR_APPLY_GATE, $1, 0); }
+        | expr subsystem concurrent_gate
+                                { 
+                                        $$ = expr_create(
+                                                EXPR_AND, 
+                                                expr_create(EXPR_APPLY_GATE, $1, $2), 
+                                                $3
+                                        ); 
+                                }
+        | TOKEN_LESS            { $$ = expr_create(EXPR_MEASURE, 0, 0); }
+        | TOKEN_LESS subsystem concurrent_gate
+                                {
+                                        $$ = expr_create(
+                                                EXPR_AND, 
+                                                expr_create(EXPR_MEASURE, 0, $2), 
+                                                $3
+                                        ); 
+                                }
         ;
 
 subsystem
         : TOKEN_LSQBR number TOKEN_RSQBR
-                                {  }
+                                { $$ = expr_create_complex_literal($2); }
         | TOKEN_LSQBR range TOKEN_RSQBR
-                                {  }
+                                { $$ = $2; }
         ;
 
 range   : number TOKEN_RANGE number
-                                {  }
+                                { 
+                                        $$ = expr_create(
+                                                EXPR_RANGE, 
+                                                expr_create_complex_literal($1), 
+                                                expr_create_complex_literal($3)
+                                        ); 
+                                }
+        ;
+
+concurrent_gate
+        : TOKEN_AND c_step      { $$ = $2; }
+        |                       { $$ = 0; }
         ;
 
 %%

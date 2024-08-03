@@ -36,7 +36,7 @@ $(BUILD_DIR)/%.l.c.o: $(SRC_DIR)/%.l
 
 $(BUILD_DIR)/%.y.c.o: $(SRC_DIR)/%.y
 	mkdir -p $(dir $@)
-	bison --defines=$(dir $<)/token.h --output=$<.c --graph=$<.dot -v $<
+	bison --defines=$(dir $<)token.h --output=$<.c --graph=$<.dot -v $<
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<.c -o $@
 
 .PHONY: clean clean-all

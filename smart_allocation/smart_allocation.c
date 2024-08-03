@@ -34,4 +34,5 @@ void smart_allocation_free() {
     for(size_t i = 0; i < allocated.size; i++) {
         free(allocated.ptr[i]);
     }
+    free(allocated.ptr);
 }
