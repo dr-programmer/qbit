@@ -1,3 +1,5 @@
+#define SMART_DEALLOCATION
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -13,8 +15,8 @@
 extern FILE *yyin;
 extern int yyparse();
 
-int main(int argc, char **argv) {
-    smart_allocation_setup();
+int main(int argc, char **argv) {S
+    //smart_allocation_setup();
 
     vector *v1 = vector_create();
     v1->fields[0][0] = complex_create(1, 0);
@@ -86,6 +88,6 @@ int main(int argc, char **argv) {
         printf("Parse "RED"failed"RESET". \n");
     }
 
-    smart_allocation_free();
+    //smart_allocation_free();
     return 0;
-}
+E}
