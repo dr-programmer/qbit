@@ -60,4 +60,7 @@ struct expr *expr_create(expr_t kind,
 struct expr *expr_create_name(char *name);
 struct expr *expr_create_complex_literal(struct complex num);
 
+void decl_print(const struct decl * const d);
+void expr_print(const struct expr * const e, const int tabs);
+
 #endif

@@ -11,9 +11,12 @@
 #include "algorithms.h"
 #include "colors.h"
 #include "error.h"
+#include "structures.h"
 
 extern FILE *yyin;
 extern int yyparse();
+
+extern struct decl *parser_result;
 
 int main(int argc, char **argv) {S
     //smart_allocation_setup();
@@ -83,6 +86,7 @@ int main(int argc, char **argv) {S
 
     if(yyparse() == 0) {
         printf("Parse "GRN"successful"RESET"! \n");
+        decl_print(parser_result);
     }
     else {
         printf("Parse "RED"failed"RESET". \n");
