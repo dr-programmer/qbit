@@ -31,5 +31,6 @@ void smart_allocation_free();
 #endif
 
 void *smart_allocate(const unsigned int num, const size_t size);
+int smart_free(const void * const ptr);
 
 #endif

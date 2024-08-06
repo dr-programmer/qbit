@@ -81,11 +81,11 @@ decl_list
         ;
 
 decl    : name TOKEN_LPAREN expr TOKEN_RPAREN
-                                { $$ = decl_create($1, $3, 0, 0); }
+                                { $$ = decl_create($1, $3, 0, 0, line); }
         | name TOKEN_LPAREN fields TOKEN_RPAREN
-                                { $$ = decl_create($1, $3, 0, 0); }
+                                { $$ = decl_create($1, $3, 0, 0, line); }
         | TOKEN_LCRBR registers TOKEN_RCRBR circuit
-                                { $$ = decl_create(0, $2, $4, 0); }
+                                { $$ = decl_create(0, $2, $4, 0, line); }
         ;
 
 name    : TOKEN_IDENT
@@ -100,47 +100,51 @@ expr    : algebra               { $$ = $1; }
         ;
 
 algebra : algebra TOKEN_PLUS term
-                                { $$ = expr_create(EXPR_ADD, $1, $3); }
+                                { $$ = expr_create(EXPR_ADD, $1, $3, line); }
         | algebra TOKEN_MINUS term
-                                { $$ = expr_create(EXPR_SUB, $1, $3); }
+                                { $$ = expr_create(EXPR_SUB, $1, $3, line); }
         | term                  { $$ = $1; }
         ;
 
-term    : term TOKEN_MUL factor { $$ = expr_create(EXPR_MUL, $1, $3); }
-        | term TOKEN_DIV factor { $$ = expr_create(EXPR_DIV, $1, $3); }
+term    : term TOKEN_MUL factor { $$ = expr_create(EXPR_MUL, $1, $3, line); }
+        | term TOKEN_DIV factor { $$ = expr_create(EXPR_DIV, $1, $3, line); }
         | term TOKEN_MODULUS factor
-                                { $$ = expr_create(EXPR_MODULUS, $1, $3); }
+                                { $$ = expr_create(EXPR_MODULUS, $1, $3, line); }
         | term TOKEN_TENSOR_PRODUCT factor
-                                { $$ = expr_create(EXPR_TENSOR_PRODUCT, $1, $3); }
+                                { $$ = expr_create(EXPR_TENSOR_PRODUCT, $1, $3, line); }
         | factor                { $$ = $1; }
         ;
 
 factor  : TOKEN_LPAREN name TOKEN_RPAREN
-                                { $$ = expr_create_name($2); }
+                                { $$ = expr_create_name($2, line); }
         | TOKEN_MINUS factor    { 
                                         $$ = expr_create(EXPR_MUL, 
                                                 expr_create_complex_literal(
-                                                        complex_create(-1, 0)
+                                                        complex_create(-1, 0), 
+                                                        line
                                                 ), 
-                                                $2
+                                                $2, 
+                                                line
                                         ); 
                                 }
-        | TOKEN_SQRT factor     { $$ = expr_create(EXPR_SQRT, 0, $2); }
-        | number                { $$ = expr_create_complex_literal($1); }
+        | TOKEN_SQRT factor     { $$ = expr_create(EXPR_SQRT, 0, $2, line); }
+        | number                { $$ = expr_create_complex_literal($1, line); }
         | TOKEN_SEPARATOR number TOKEN_GREATER
                                 { 
                                         $$ = expr_create(
                                                 EXPR_KET, 
                                                 0, 
-                                                expr_create_complex_literal($2)
+                                                expr_create_complex_literal($2, line), 
+                                                line
                                         ); 
                                 }
         | TOKEN_LESS number TOKEN_SEPARATOR
                                 { 
                                         $$ = expr_create(
                                                 EXPR_BRA, 
-                                                expr_create_complex_literal($2), 
-                                                0
+                                                expr_create_complex_literal($2, line), 
+                                                0, 
+                                                line
                                         ); 
                                 }
         | TOKEN_LPAREN expr TOKEN_RPAREN
@@ -163,7 +167,7 @@ number  : TOKEN_COMPLEX_LITERAL
                         $$ = result; 
                 }
 
-fields  : expr next_expr        { $$ = expr_create(EXPR_FIELD, $1, $2); }
+fields  : expr next_expr        { $$ = expr_create(EXPR_FIELD, $1, $2, line); }
         |                       { $$ = 0; }
         ;
 
@@ -176,7 +180,7 @@ next_expr
         ;
 
 registers
-        : reg registers         { $$ = expr_create(EXPR_REGISTER, $1, $2); }
+        : reg registers         { $$ = expr_create(EXPR_REGISTER, $1, $2, line); }
         |                       { $$ = 0; }
         ;
 
@@ -185,33 +189,35 @@ reg     : TOKEN_LCRBR fields TOKEN_RCRBR
         ;
 
 circuit : TOKEN_NEXT c_step circuit
-                                { $$ = expr_create(EXPR_CIRCUIT_STEP, $2, $3); }
+                                { $$ = expr_create(EXPR_CIRCUIT_STEP, $2, $3, line); }
         |                       { $$ = 0; }
         ;
 
-c_step  : expr                  { $$ = expr_create(EXPR_APPLY_GATE, $1, 0); }
+c_step  : expr                  { $$ = expr_create(EXPR_APPLY_GATE, $1, 0, line); }
         | expr subsystem concurrent_gate
                                 { 
                                         $$ = expr_create(
                                                 EXPR_AND, 
-                                                expr_create(EXPR_APPLY_GATE, $1, $2), 
-                                                $3
+                                                expr_create(EXPR_APPLY_GATE, $1, $2, line), 
+                                                $3, 
+                                                line
                                         ); 
                                 }
-        | TOKEN_LESS            { $$ = expr_create(EXPR_MEASURE, 0, 0); }
+        | TOKEN_LESS            { $$ = expr_create(EXPR_MEASURE, 0, 0, line); }
         | TOKEN_LESS subsystem concurrent_gate
                                 {
                                         $$ = expr_create(
                                                 EXPR_AND, 
-                                                expr_create(EXPR_MEASURE, 0, $2), 
-                                                $3
+                                                expr_create(EXPR_MEASURE, 0, $2, line), 
+                                                $3, 
+                                                line
                                         ); 
                                 }
         ;
 
 subsystem
         : TOKEN_LSQBR number TOKEN_RSQBR
-                                { $$ = expr_create_complex_literal($2); }
+                                { $$ = expr_create_complex_literal($2, line); }
         | TOKEN_LSQBR range TOKEN_RSQBR
                                 { $$ = $2; }
         ;
@@ -220,8 +226,9 @@ range   : number TOKEN_RANGE number
                                 { 
                                         $$ = expr_create(
                                                 EXPR_RANGE, 
-                                                expr_create_complex_literal($1), 
-                                                expr_create_complex_literal($3)
+                                                expr_create_complex_literal($1, line), 
+                                                expr_create_complex_literal($3, line), 
+                                                line
                                         ); 
                                 }
         ;

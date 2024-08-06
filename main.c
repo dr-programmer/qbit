@@ -12,11 +12,14 @@
 #include "colors.h"
 #include "error.h"
 #include "structures.h"
+#include "scope.h"
 
 extern FILE *yyin;
 extern int yyparse();
 
 extern struct decl *parser_result;
+
+struct scope *symbol_table = NULL;
 
 int main(int argc, char **argv) {S
     //smart_allocation_setup();
@@ -76,6 +79,10 @@ int main(int argc, char **argv) {S
     );
     matrix_print(hadamard_minus);
 
+    int check0 = smart_free(hadamard_minus);
+    int check1 = smart_free(hadamard_minus);
+    printf("Free 0: %d \nFree 1: %d \n", check0, check1);
+
     printf("\nDeutsch algorithm: %hd \n", algorithm_deutsch(quantum_gate_create_cnot()));
 
     yyin = fopen(argv[1], "r");
@@ -93,5 +100,6 @@ int main(int argc, char **argv) {S
     }
 
     //smart_allocation_free();
+    E
     return 0;
-E}
+}

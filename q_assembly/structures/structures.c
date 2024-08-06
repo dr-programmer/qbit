@@ -9,34 +9,38 @@ unsigned int error_count;
 struct decl *decl_create(char *name, 
                             struct expr *value, 
                             struct expr *circuit, 
-                            struct decl *next) 
+                            struct decl *next, 
+                            unsigned int line) 
 {
     struct decl *temp = (struct decl *)smart_allocate(1, sizeof(struct decl));
     temp->name = name;
     temp->value = value;
     temp->circuit = circuit;
     temp->next = next;
+    temp->line = line;
     return temp;
 }
 
 struct expr *expr_create(expr_t kind, 
                             struct expr *left, 
-                            struct expr *right) 
+                            struct expr *right, 
+                            unsigned int line) 
 {
     struct expr *temp = (struct expr *)smart_allocate(1, sizeof(struct expr));
     temp->kind = kind;
     temp->left = left;
     temp->right = right;
+    temp->line = line;
     return temp;
 }
 
-struct expr *expr_create_name(char *name) {
-    struct expr *temp = expr_create(EXPR_NAME, NULL, NULL);
+struct expr *expr_create_name(char *name, unsigned int line) {
+    struct expr *temp = expr_create(EXPR_NAME, NULL, NULL, line);
     temp->name = name;
     return temp;
 }
-struct expr *expr_create_complex_literal(struct complex num) {
-    struct expr *temp = expr_create(EXPR_COMPLEX_LITERAL, NULL, NULL);
+struct expr *expr_create_complex_literal(struct complex num, unsigned int line) {
+    struct expr *temp = expr_create(EXPR_COMPLEX_LITERAL, NULL, NULL, line);
     temp->complex_literal = num;
     return temp;
 }
@@ -145,3 +149,42 @@ void expr_print(const struct expr * const e, const int tabs) {
                                 expr_print(e->right, -1); break;
     }
 }
+
+#include "stdarg.h"
+
+void printf_error(char *str, ...) {
+    va_list argument;
+    struct decl *d;
+    struct expr *e;
+    error_count++;
+    va_start(argument, str);
+    for(unsigned int i = 0; str[i] != '\0'; i++) {
+        switch(str[i]) {
+            case '%':
+                switch(str[++i]) {
+                    case 'D':
+                        d = va_arg(argument, struct decl *);
+                        decl_print(d);
+                        break;
+                    case 'E':
+                        e = va_arg(argument, struct expr *);
+                        expr_print(e, 0);
+                        break;
+                    case '%':
+                        putchar(str[i]);
+                        break;
+                    default: i--; break;
+                }
+                break;
+            default: putchar(str[i]); break;
+        }
+    }
+    va_end(argument);
+}
+
+void decl_analyse(const struct decl * const d) {
+    if(!d) return;
+
+    
+}
+void expr_analyse(const struct expr * const e);

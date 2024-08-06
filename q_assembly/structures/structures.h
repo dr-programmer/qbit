@@ -37,6 +37,8 @@ struct decl {
     struct expr *value;
     struct expr *circuit;
     struct decl *next;
+
+    unsigned int line;
 };
 
 struct expr {
@@ -46,21 +48,32 @@ struct expr {
 
     char *name;
     struct complex complex_literal;
+
+    struct decl *declaration;
+
+    unsigned int line;
 };
 
 struct decl *decl_create(char *name, 
                             struct expr *value, 
                             struct expr *circuit, 
-                            struct decl *next);
+                            struct decl *next, 
+                            unsigned int line);
 
 struct expr *expr_create(expr_t kind, 
                             struct expr *left, 
-                            struct expr *right);
+                            struct expr *right, 
+                            unsigned int line);
 
-struct expr *expr_create_name(char *name);
-struct expr *expr_create_complex_literal(struct complex num);
+struct expr *expr_create_name(char *name, unsigned int line);
+struct expr *expr_create_complex_literal(struct complex num, unsigned int line);
 
 void decl_print(const struct decl * const d);
 void expr_print(const struct expr * const e, const int tabs);
+
+void printf_error(char *str, ...);
+
+void decl_analyse(const struct decl * const d);
+void expr_analyse(const struct expr * const e);
 
 #endif
