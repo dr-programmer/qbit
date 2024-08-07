@@ -53,7 +53,9 @@ static long hash_function(const char *name, const unsigned int capacity) {
 
 void scope_enter() {
     struct scope *temp = symbol_table;
-    symbol_table = scope_create(temp->depth + 1);
+    int depth = -1;
+    if(symbol_table) depth = symbol_table->depth;
+    symbol_table = scope_create(depth + 1);
     symbol_table->next = temp;
 }
 void scope_exit() {
@@ -97,7 +99,8 @@ struct decl *hash_table_find(const struct hash_table * const h, const char * con
     long index = hash_function(name, h->capacity);
     if(index == -1) return NULL;
 
-    for(unsigned int safe = 0; strcmp(name, h->declarations[index]->name) != 0; 
+    for(unsigned int safe = 0; h->declarations[index] != NULL 
+                && strcmp(name, h->declarations[index]->name) != 0; 
                 index = (index + 1) % h->capacity) 
     {
         if(safe >= h->capacity) return NULL;

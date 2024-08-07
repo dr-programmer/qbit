@@ -93,7 +93,18 @@ int main(int argc, char **argv) {S
 
     if(yyparse() == 0) {
         printf("Parse "GRN"successful"RESET"! \n");
-        decl_print(parser_result);
+        decl_print(parser_result, 0);
+
+        scope_enter();
+        decl_resolve(parser_result);
+        scope_exit();
+
+        decl_typecheck(parser_result);
+
+        if(!error_count) {
+
+        }
+        printf("Program compiled with %d error/s \n", error_count);
     }
     else {
         printf("Parse "RED"failed"RESET". \n");
