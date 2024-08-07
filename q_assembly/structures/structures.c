@@ -31,6 +31,7 @@ struct expr *expr_create(expr_t kind,
     temp->left = left;
     temp->right = right;
     temp->line = line;
+    temp->reg = reg_create(-1, -1);
     return temp;
 }
 
@@ -235,8 +236,8 @@ void decl_typecheck(struct decl * const d) {
     if(!d) return;
 
     struct dimensions dimensions = dimensions_create(0, 0);
-    dimensions = expr_typecheck(d->value);
-    expr_typecheck(d->circuit);
+    dimensions = expr_typecheck(d->value, NULL);
+    expr_typecheck(d->circuit, d->value);
     if(d->name) d->dimensions = dimensions;
 
     decl_typecheck(d->next);
@@ -245,17 +246,20 @@ struct reg reg_create(int start, int end) {
     struct reg temp = {start, end};
     return temp;
 }
-struct dimensions expr_typecheck(struct expr * const e) {
+struct dimensions expr_typecheck(struct expr * const e, struct expr * const reg_ptr) {
     if(!e) return dimensions_create(0, 0);
 
-    struct dimensions left = expr_typecheck(e->left);
-    struct dimensions right = expr_typecheck(e->right);
+    struct dimensions left = expr_typecheck(e->left, reg_ptr);
+    struct dimensions right = expr_typecheck(e->right, reg_ptr);
 
     struct dimensions result = dimensions_create(0, 0);
 
     switch(e->kind) {
-        case EXPR_NAME:  if(e->declaration) result = e->declaration->dimensions; break;
-        case EXPR_COMPLEX_LITERAL: result = dimensions_create(1, 1); break;
+        case EXPR_NAME: if(e->declaration) result = e->declaration->dimensions; break;
+        case EXPR_COMPLEX_LITERAL: 
+            e->reg = reg_create(e->complex_literal.real, e->complex_literal.real);
+            result = dimensions_create(1, 1);
+            break;
         case EXPR_KET ... EXPR_BRA: {
             int qubit_value = -1;
 
@@ -342,6 +346,10 @@ struct dimensions expr_typecheck(struct expr * const e) {
                 e->left->complex_literal.real, 
                 e->right->complex_literal.real
             );
+            break;
+        case EXPR_APPLY_GATE: 
+            if(e->right) e->reg = e->right->reg;
+            e->reg_ptr = reg_ptr;
             break;
     }
 

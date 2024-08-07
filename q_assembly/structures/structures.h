@@ -65,6 +65,7 @@ struct expr {
 
     struct dimensions dimensions;
     struct reg reg;
+    struct expr *reg_ptr;
 
     unsigned int line;
 };
@@ -94,6 +95,6 @@ void expr_resolve(struct expr * const e);
 struct dimensions dimensions_create(int rows, int columns);
 void decl_typecheck(struct decl * const d);
 struct reg reg_create(int start, int end);
-struct dimensions expr_typecheck(struct expr * const e);
+struct dimensions expr_typecheck(struct expr * const e, struct expr * const reg_ptr);
 
 #endif
