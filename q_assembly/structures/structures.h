@@ -2,6 +2,9 @@
 #define STRUCTURES_H
 
 #include "complex_numbers.h"
+#include "linear_algebra.h"
+#include "qubits.h"
+#include "operators.h"
 
 extern unsigned int error_count;
 
@@ -45,6 +48,8 @@ struct decl {
 
     struct dimensions dimensions;
 
+    quantum_operator *operator;
+
     unsigned int line;
 };
 
@@ -65,7 +70,6 @@ struct expr {
 
     struct dimensions dimensions;
     struct reg reg;
-    struct expr *reg_ptr;
 
     unsigned int line;
 };
@@ -95,6 +99,9 @@ void expr_resolve(struct expr * const e);
 struct dimensions dimensions_create(int rows, int columns);
 void decl_typecheck(struct decl * const d);
 struct reg reg_create(int start, int end);
-struct dimensions expr_typecheck(struct expr * const e, struct expr * const reg_ptr);
+struct dimensions expr_typecheck(struct expr * const e);
+
+void decl_coderun(struct decl * const d);
+struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs);
 
 #endif

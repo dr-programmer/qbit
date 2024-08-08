@@ -121,6 +121,18 @@ struct matrix *matrix_tensor_product(const struct matrix * const m1,
     return result;
 }
 
+struct matrix *matrix_transpose(const struct matrix * const m) {
+    if(!m) return NULL;
+
+    struct matrix *result = matrix_create_empty(m->columns, m->rows);
+    for(unsigned int i = 0; i < m->columns; i++) {
+        for(unsigned int j = 0; j < m->rows; j++) {
+            result->fields[i][j] = m->fields[j][i];
+        }
+    }
+    return result;
+}
+
 struct matrix *matrix_get_adjoint(const struct matrix * const m) {
     if(!m) return NULL;
 

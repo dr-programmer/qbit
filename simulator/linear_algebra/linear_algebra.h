@@ -25,6 +25,8 @@ struct matrix *matrix_mul_scalar(const struct complex s, const struct matrix * c
 struct matrix *matrix_tensor_product(const struct matrix * const m1, 
                                         const struct matrix * const m2);
 
+struct matrix *matrix_transpose(const struct matrix * const m);
+
 struct matrix *matrix_get_adjoint(const struct matrix * const m);
 
 struct complex matrix_get_trace(const struct matrix * const m);

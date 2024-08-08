@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "structures.h"
+#define SMART_DEALLOCATION
 #include "smart_allocation.h"
 
 unsigned int error_count;
@@ -232,13 +233,20 @@ struct dimensions dimensions_create(int rows, int columns) {
     struct dimensions temp = {rows, columns};
     return temp;
 }
+struct dimensions get_gate_dimensions(const struct dimensions d) {
+    int side = sqrt(d.columns);
+    return dimensions_create(side, side);
+}
 void decl_typecheck(struct decl * const d) {
     if(!d) return;
 
     struct dimensions dimensions = dimensions_create(0, 0);
-    dimensions = expr_typecheck(d->value, NULL);
-    expr_typecheck(d->circuit, d->value);
-    if(d->name) d->dimensions = dimensions;
+    dimensions = expr_typecheck(d->value);
+    expr_typecheck(d->circuit);
+    if(d->name) {
+        if(dimensions.rows == 0) d->dimensions = get_gate_dimensions(dimensions);
+        else d->dimensions = dimensions;
+    }
 
     decl_typecheck(d->next);
 }
@@ -246,11 +254,11 @@ struct reg reg_create(int start, int end) {
     struct reg temp = {start, end};
     return temp;
 }
-struct dimensions expr_typecheck(struct expr * const e, struct expr * const reg_ptr) {
+struct dimensions expr_typecheck(struct expr * const e) {
     if(!e) return dimensions_create(0, 0);
 
-    struct dimensions left = expr_typecheck(e->left, reg_ptr);
-    struct dimensions right = expr_typecheck(e->right, reg_ptr);
+    struct dimensions left = expr_typecheck(e->left);
+    struct dimensions right = expr_typecheck(e->right);
 
     struct dimensions result = dimensions_create(0, 0);
 
@@ -347,13 +355,193 @@ struct dimensions expr_typecheck(struct expr * const e, struct expr * const reg_
                 e->right->complex_literal.real
             );
             break;
-        case EXPR_APPLY_GATE: 
-            if(e->right) e->reg = e->right->reg;
-            e->reg_ptr = reg_ptr;
-            break;
+        case EXPR_APPLY_GATE: if(e->right) e->reg = e->right->reg; break;
+        case EXPR_MEASURE: if(e->right) e->reg = e->right->reg; break;
+        case EXPR_FIELD: result = dimensions_create(0, right.columns + 1); break;
     }
 
     e->dimensions = result;
+
+    return result;
+}
+
+static quantum_operator *get_quantum_operator(const struct matrix * const m, 
+                                                const struct dimensions d) 
+{
+    if(!m) return NULL;
+
+    quantum_operator *result = matrix_create_empty(d.rows, d.columns);
+    for(unsigned int i = 0; i < d.rows; i++) {
+        for(unsigned int j = 0; j < d.columns; j++) {
+            result->fields[i][j] = m->fields[0][j + i * d.columns];
+        }
+    }
+
+    return result;
+}
+void decl_coderun(struct decl * const d) {
+    if(!d) return;
+
+    if(d->name == NULL) {
+        quantum_state *registers = expr_coderun(d->value, NULL);
+        expr_coderun(d->circuit, registers);
+    }
+    else {
+        struct matrix *temp = expr_coderun(d->value, NULL);
+        if(d->value->kind == EXPR_FIELD) temp = get_quantum_operator(temp, d->dimensions);
+        d->operator = temp;
+    }
+
+    decl_coderun(d->next);
+}
+struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
+    if(!e) return NULL;
+
+    struct matrix *left = NULL;
+    struct matrix *right = NULL;
+
+    if(regs == NULL) {
+        left = expr_coderun(e->left, regs);
+        right = expr_coderun(e->right, regs);
+    }
+
+    struct matrix *result = NULL;
+
+    switch(e->kind) {
+        case EXPR_NAME: result = e->declaration->operator; break;
+        case EXPR_COMPLEX_LITERAL: S
+            result = matrix_mul_scalar(
+                e->complex_literal, 
+                matrix_create(1, 1)
+            );
+            P(result) P(result->fields) P(result->fields[0])
+            E
+            break;
+        case EXPR_KET: 
+            result = quantum_state_create(right->fields[0][0].real, e->dimensions.rows);
+            break;
+        case EXPR_BRA: {
+            quantum_state *temp = 
+                quantum_state_create(left->fields[0][0].real, e->dimensions.columns);
+            result = vector_get_dual(temp);
+            break;
+        }
+        case EXPR_SQRT: 
+            right->fields[0][0].real = sqrt(right->fields[0][0].real);
+            result = right;
+            break;
+        case EXPR_MODULUS: 
+            result = matrix_mul_scalar(
+                complex_create(
+                    (int)left->fields[0][0].real % (int)right->fields[0][0].real, 
+                    0
+                ), 
+                matrix_create(1, 1)
+            );
+            break;
+        case EXPR_ADD: 
+            result = matrix_add(left, right);
+            break;
+        case EXPR_SUB: 
+            result = matrix_sub(left, right);
+            break;
+        case EXPR_MUL: 
+            result = matrix_mul(left, right);
+            break;
+        case EXPR_DIV: 
+            result = matrix_mul_scalar(
+                complex_div(left->fields[0][0], right->fields[0][0]), 
+                matrix_create(1, 1)
+            );
+            break;
+        case EXPR_TENSOR_PRODUCT: 
+            result = matrix_tensor_product(left, right);
+            break;
+        case EXPR_FIELD: 
+            if(right == NULL) {
+                result = left;
+            }
+            else {
+                result = matrix_create(1, right->columns+1);
+                for(unsigned int i = 1; i < result->columns; i++) {
+                    result->fields[0][i] = right->fields[0][i-1];
+                }
+                result->fields[0][0] = left->fields[0][0];
+            }
+            break;
+        case EXPR_REGISTER: 
+            if(right == NULL) result = matrix_transpose(left);
+            else {
+                result = matrix_tensor_product(
+                    matrix_transpose(left), 
+                    right
+                );
+            }
+            break;
+        case EXPR_MEASURE: {
+            qm_result *m_result = NULL;
+            if(e->right == NULL || regs->rows <= 2) {
+                WHOLE_SYSTEM_MEASUREMENT:
+                m_result = quantum_state_measure(regs);
+                result = m_result->state;
+            }
+            else {
+                unsigned int scope = (e->reg.end - e->reg.start + 1);
+                unsigned int systems = regs->rows / 2 / scope;
+                if(systems == 1) goto WHOLE_SYSTEM_MEASUREMENT;
+                unsigned int system_index;
+                if(scope - 1 + e->reg.start == 0) system_index = 0;
+                else system_index = systems / (scope - 1 + e->reg.start);
+                m_result = quantum_state_measure_subsystem(
+                                           regs, 
+                                           system_index, 
+                                           systems
+                                      );
+                result = m_result->state;
+            }
+            printf(CYN"Quantum state of the system after measurement: \n"GRN);
+            matrix_print(result);
+            printf(CYN"Classical bit representation: "GRN"%d \n"RESET, m_result->value);
+            break;
+        }
+        case EXPR_APPLY_GATE: {
+            left = expr_coderun(e->left, NULL);
+
+            result = NULL;
+            if(e->right != NULL) {
+                for(unsigned int i = 0; i < regs->rows;) {
+                    if(i < e->reg.start * 2 || i > e->reg.end * 2) {
+                        if(!result) result = quantum_gate_create(2);
+                        else result = matrix_tensor_product(result, quantum_gate_create(2));
+                        i+=2;
+                    }
+                    else if(i <= e->reg.end * 2) {
+                        if(!result) result = left;
+                        else result = matrix_tensor_product(result, left);
+                        i += (e->reg.end+1) * 2;
+                    }
+                }
+            }
+            else result = left;
+            break;
+        }
+        case EXPR_AND: {
+            left = expr_coderun(e->left, regs);
+            quantum_state *new_regs = matrix_mul(left, regs);
+            quantum_gate *concurrent_gate = expr_coderun(e->right, new_regs);
+            if(concurrent_gate) result = concurrent_gate;
+            else if(new_regs) result = new_regs;
+            else result = left;
+            break;
+        }
+        case EXPR_CIRCUIT_STEP: {
+            left = expr_coderun(e->left, regs);
+            quantum_state *new_regs = matrix_mul(left, regs);
+            if(new_regs == NULL) new_regs = left;
+            result = expr_coderun(e->right, new_regs);
+            break;
+        }
+    }
 
     return result;
 }

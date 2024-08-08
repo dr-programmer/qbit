@@ -80,9 +80,7 @@ decl_list
         |                       { $$ = 0; }
         ;
 
-decl    : name TOKEN_LPAREN expr TOKEN_RPAREN
-                                { $$ = decl_create($1, $3, 0, 0, line); }
-        | name TOKEN_LPAREN fields TOKEN_RPAREN
+decl    : name TOKEN_LPAREN fields TOKEN_RPAREN
                                 { $$ = decl_create($1, $3, 0, 0, line); }
         | TOKEN_LCRBR registers TOKEN_RCRBR circuit
                                 { $$ = decl_create(0, $2, $4, 0, line); }
@@ -167,7 +165,12 @@ number  : TOKEN_COMPLEX_LITERAL
                         $$ = result; 
                 }
 
-fields  : expr next_expr        { $$ = expr_create(EXPR_FIELD, $1, $2, line); }
+fields  : expr next_expr        { 
+                                        if($2 == NULL) 
+                                                $$ = $1;
+                                        else 
+                                                $$ = expr_create(EXPR_FIELD, $1, $2, line); 
+                                }
         |                       { $$ = 0; }
         ;
 

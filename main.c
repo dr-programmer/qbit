@@ -94,6 +94,7 @@ int main(int argc, char **argv) {S
     if(yyparse() == 0) {
         printf("Parse "GRN"successful"RESET"! \n");
         decl_print(parser_result, 0);
+        printf("\n");
 
         scope_enter();
         decl_resolve(parser_result);
@@ -102,9 +103,9 @@ int main(int argc, char **argv) {S
         decl_typecheck(parser_result);
 
         if(!error_count) {
-
+            decl_coderun(parser_result);
         }
-        printf("Program compiled with %d error/s \n", error_count);
+        printf("\nProgram compiled with %d error/s \n", error_count);
     }
     else {
         printf("Parse "RED"failed"RESET". \n");
