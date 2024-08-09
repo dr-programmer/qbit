@@ -414,23 +414,27 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
                 e->complex_literal, 
                 matrix_create(1, 1)
             );
-            P(result) P(result->fields) P(result->fields[0])
+            P(result)
             E
             break;
-        case EXPR_KET: 
+        case EXPR_KET: S
             result = quantum_state_create(right->fields[0][0].real, e->dimensions.rows);
+            P(result)
+            E
             break;
-        case EXPR_BRA: {
+        case EXPR_BRA: {S
             quantum_state *temp = 
                 quantum_state_create(left->fields[0][0].real, e->dimensions.columns);
             result = vector_get_dual(temp);
+            P(result)
+            E
             break;
         }
         case EXPR_SQRT: 
             right->fields[0][0].real = sqrt(right->fields[0][0].real);
             result = right;
             break;
-        case EXPR_MODULUS: 
+        case EXPR_MODULUS: S
             result = matrix_mul_scalar(
                 complex_create(
                     (int)left->fields[0][0].real % (int)right->fields[0][0].real, 
@@ -438,24 +442,36 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
                 ), 
                 matrix_create(1, 1)
             );
+            P(result)
+            E
             break;
-        case EXPR_ADD: 
+        case EXPR_ADD: S
             result = matrix_add(left, right);
+            P(result)
+            E
             break;
-        case EXPR_SUB: 
+        case EXPR_SUB: S
             result = matrix_sub(left, right);
+            P(result)
+            E
             break;
-        case EXPR_MUL: 
+        case EXPR_MUL: S
             result = matrix_mul(left, right);
+            P(result)
+            E
             break;
-        case EXPR_DIV: 
+        case EXPR_DIV: S
             result = matrix_mul_scalar(
                 complex_div(left->fields[0][0], right->fields[0][0]), 
                 matrix_create(1, 1)
             );
+            P(result)
+            E
             break;
-        case EXPR_TENSOR_PRODUCT: 
+        case EXPR_TENSOR_PRODUCT: S
             result = matrix_tensor_product(left, right);
+            P(result)
+            E
             break;
         case EXPR_FIELD: 
             if(right == NULL) {

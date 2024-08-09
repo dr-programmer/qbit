@@ -1,4 +1,5 @@
 #include "qubits.h"
+#define SMART_DEALLOCATION
 #include "smart_allocation/smart_allocation.h"
 
 #include <stdlib.h>
@@ -25,6 +26,7 @@ qubit *qubit_create_init(const struct complex a0, const struct complex a1) {
 qm_result *qm_result_create(const quantum_state * const state, const unsigned int value) {
     qm_result *temp = (qm_result *)smart_allocate(1, sizeof(qm_result));
     temp->state = (quantum_state *)state;
+    B(temp, temp->state)
     temp->value = value;
     return temp;
 }

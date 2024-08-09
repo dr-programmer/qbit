@@ -23,7 +23,7 @@ struct scope *symbol_table = NULL;
 
 int main(int argc, char **argv) {S
     //smart_allocation_setup();
-
+    S
     vector *v1 = vector_create();
     v1->fields[0][0] = complex_create(1, 0);
     v1->fields[1][0] = complex_create(2, 0);
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {S
     printf("Free 0: %d \nFree 1: %d \n", check0, check1);
 
     printf("\nDeutsch algorithm: %hd \n", algorithm_deutsch(quantum_gate_create_cnot()));
-
+    E
     yyin = fopen(argv[1], "r");
     if(yyin == NULL) {
         fprintf(stderr, "Error opening file %s \n", argv[1]);
@@ -112,6 +112,6 @@ int main(int argc, char **argv) {S
     }
 
     //smart_allocation_free();
-    E
+E
     return 0;
 }

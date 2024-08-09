@@ -1,4 +1,5 @@
 #include "linear_algebra.h"
+#define SMART_DEALLOCATION
 #include "../smart_allocation/smart_allocation.h"
 
 struct matrix *matrix_create(const unsigned int rows, const unsigned int columns) {
@@ -6,8 +7,10 @@ struct matrix *matrix_create(const unsigned int rows, const unsigned int columns
     temp->rows = rows;
     temp->columns = columns;
     temp->fields = (struct complex **)smart_allocate(rows, sizeof(struct complex *));
+    B(temp, temp->fields)
     for(unsigned int i = 0; i < rows; i++) {
         temp->fields[i] = (struct complex *)smart_allocate(columns, sizeof(struct complex));
+        B(temp, temp->fields[i])
         temp->fields[i][i % columns] = complex_create(1, 0);
     }
     return temp;
@@ -17,8 +20,10 @@ struct matrix *matrix_create_empty(const unsigned int rows, const unsigned int c
     temp->rows = rows;
     temp->columns = columns;
     temp->fields = (struct complex **)smart_allocate(rows, sizeof(struct complex *));
+    B(temp, temp->fields)
     for(unsigned int i = 0; i < rows; i++) {
         temp->fields[i] = (struct complex *)smart_allocate(columns, sizeof(struct complex));
+        B(temp, temp->fields[i])
     }
     return temp;
 }
