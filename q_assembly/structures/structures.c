@@ -491,7 +491,7 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
                 if(systems == 1) goto WHOLE_SYSTEM_MEASUREMENT;
                 unsigned int system_index;
                 if(scope - 1 + e->reg.start == 0) system_index = 0;
-                else system_index = systems / (scope - 1 + e->reg.start);
+                else system_index = systems / (scope - 1 + e->reg.start) - 1;
                 m_result = quantum_state_measure_subsystem(
                                            regs, 
                                            system_index, 

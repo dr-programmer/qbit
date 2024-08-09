@@ -171,7 +171,8 @@ struct matrix *matrix_get_partial_trace(const struct matrix * const m,
         for(unsigned int j = 0; j < space_size; j++) {
             result->fields[i][j] = complex_add(
                 m->fields[i * (space_index + 1)][j * (space_index + 1)], 
-                m->fields[i + (spaces - space_index)][j + (spaces - space_index)]
+                m->fields[i * (space_index + 1) + (spaces - space_index)]
+                            [j * (space_index + 1) + (spaces - space_index)]
             );
         }
     }
