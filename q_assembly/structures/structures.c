@@ -110,9 +110,9 @@ void expr_print(const struct expr * const e, const int tabs) {
         case EXPR_FIELD: expr_print(e->left, 0); 
                             if(e->right) {
                                 int next_tabs = 0;
-                                if(tabs == -1) {
+                                if(tabs == -2) {
                                     printf(" | ");
-                                    next_tabs = -1;
+                                    next_tabs = -2;
                                 }
                                 else printf(", ");
                                 expr_print(e->right, next_tabs);
@@ -358,6 +358,18 @@ struct dimensions expr_typecheck(struct expr * const e) {
         case EXPR_APPLY_GATE: if(e->right) e->reg = e->right->reg; break;
         case EXPR_MEASURE: if(e->right) e->reg = e->right->reg; break;
         case EXPR_FIELD: result = dimensions_create(0, right.columns + 1); break;
+        case EXPR_REGISTER: {
+            int left_dimensions;
+
+            if(e->left->kind != EXPR_FIELD) left_dimensions = e->left->dimensions.rows;
+            else left_dimensions = e->left->dimensions.columns;
+
+            if(e->right == NULL) result = dimensions_create(left_dimensions, 1);
+            else result = dimensions_create(left_dimensions 
+                                                    * e->right->dimensions.rows, 
+                                                1);
+            break;
+        }
     }
 
     e->dimensions = result;
@@ -486,10 +498,11 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             }
             break;
         case EXPR_REGISTER: 
-            if(right == NULL) result = matrix_transpose(left);
+            if(e->left->kind == EXPR_FIELD) left = matrix_transpose(left);
+            if(right == NULL) result = left;
             else {
                 result = matrix_tensor_product(
-                    matrix_transpose(left), 
+                    left, 
                     right
                 );
             }
@@ -497,14 +510,14 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
         case EXPR_MEASURE: {
             qm_result *m_result = NULL;
             if(e->right == NULL || regs->rows <= 2) {
-                WHOLE_SYSTEM_MEASUREMENT:
+                WHOLE_SYSTEM_MEASUREMENT_CODERUNNER:
                 m_result = quantum_state_measure(regs);
                 result = m_result->state;
             }
             else {
                 unsigned int scope = (e->reg.end - e->reg.start + 1);
                 unsigned int systems = regs->rows / 2 / scope;
-                if(systems == 1) goto WHOLE_SYSTEM_MEASUREMENT;
+                if(systems <= 1) goto WHOLE_SYSTEM_MEASUREMENT_CODERUNNER;
                 unsigned int system_index;
                 if(scope - 1 + e->reg.start == 0) system_index = 0;
                 else system_index = systems / (scope - 1 + e->reg.start) - 1;
@@ -560,4 +573,265 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
     }
 
     return result;
+}
+
+extern FILE *result_file;
+
+void decl_codegen(struct decl * const d) {
+    if(!d) return;
+printf("Here \n");
+    if(d->name == NULL) {
+        expr_codegen(d->value, NULL);
+        expr_codegen(d->circuit, d->value);
+    }
+    else {
+        expr_codegen(d->value, NULL);
+        printf("After expr_codegen() \n");
+        if(d->value->kind == EXPR_FIELD) {
+            fprintf(result_file, "quantum_gate *%s = quantum_gate_create(%d);\n", 
+                                            d->name, 
+                                            d->dimensions.rows);
+            struct expr *fields = d->value;
+            for(unsigned int i = 0; i < d->dimensions.rows; i++) {
+                for(unsigned int j = 0; j < d->dimensions.columns; j++) {
+                    fprintf(result_file, "%s->fields[%u][%u] = %s->fields[0][0];\n", 
+                                            d->name, 
+                                            i, 
+                                            j, 
+                                            fields->name);
+                    fields = fields->right;
+                }
+            }
+        }
+        else fprintf(result_file, "quantum_state *%s = %s;\n", 
+                                            d->name, 
+                                            d->value->name);
+    }
+
+    decl_codegen(d->next);
+}
+char *var_create() {
+    static unsigned int count = 0;
+    char *result = (char *)smart_allocate(1 + log10(count) + 1, sizeof(char));
+    sprintf(result, "t%u", count++);
+    return result;
+}
+void expr_codegen(struct expr * const e, struct expr * const regs) {
+    if(!e) return;
+
+    switch(e->kind) {
+        case EXPR_NAME: break;
+        case EXPR_COMPLEX_LITERAL: 
+            e->name = var_create();
+            fprintf(result_file, "struct matrix *%s = matrix_create_empty(1, 1);\n", 
+                                        e->name);
+            fprintf(result_file, "%s->fields[0][0] = complex_create(%f, %f);\n", 
+                                        e->name, 
+                                        e->complex_literal.real, 
+                                        e->complex_literal.imaginary);
+            break;
+        case EXPR_KET ... EXPR_BRA: {
+            char *temp = var_create();
+            int dimension_index = e->kind == EXPR_KET 
+                                    ? e->right->complex_literal.real 
+                                    : e->left->complex_literal.real;
+            int dimensions = e->kind == EXPR_KET 
+                                    ? e->dimensions.rows 
+                                    : e->dimensions.columns;
+            fprintf(result_file, "qubit *%s = quantum_state_create(%d, %d);\n", 
+                                        temp, 
+                                        dimension_index, 
+                                        dimensions);
+            if(e->kind == EXPR_BRA) {
+                e->name = var_create();
+                fprintf(result_file, "quantum_state *%s = vector_get_dual(%s);\n", 
+                                        e->name, 
+                                        temp);
+            }
+            else e->name = temp;
+            break;
+        }
+        case EXPR_SQRT: 
+            expr_codegen(e->right, regs);
+            e->name = e->right->name;
+            fprintf(result_file, "%s->fields[0][0].real = sqrt(%s->fields[0][0].real);\n", 
+                                        e->name, 
+                                        e->name);
+            break;
+        case EXPR_MODULUS: 
+        case EXPR_DIV: 
+            expr_codegen(e->left, regs);
+            expr_codegen(e->right, regs);
+            e->name = var_create();
+            char *operator = NULL;
+            if(e->kind == EXPR_MODULUS) operator = "%%";
+            else operator = "/";
+            fprintf(result_file, "struct matrix *%s = matrix_create_empty(1, 1);\n", 
+                                        e->name);
+            fprintf(result_file, "%s->fields[0][0].real = %s->fields[0][0].real"
+                                    " %s "
+                                    "%s->fields[0][0].real;\n", 
+                                        e->name, 
+                                        e->left->name, 
+                                        operator, 
+                                        e->right->name);
+            break;
+        case EXPR_TENSOR_PRODUCT: 
+        case EXPR_ADD ... EXPR_MUL: {
+            printf("Binary operation \n");
+            expr_codegen(e->left, regs);
+            expr_codegen(e->right, regs);
+            printf("expr left name = %s \n", e->left->name);
+            e->name = var_create();
+            char *function = NULL;
+            if(e->kind == EXPR_ADD) function = "matrix_add";
+            else if(e->kind == EXPR_SUB) function = "matrix_sub";
+            else if(e->kind == EXPR_MUL) function = "matrix_mul";
+            else if(e->kind == EXPR_TENSOR_PRODUCT) function = "matrix_tensor_product";
+            fprintf(result_file, "struct matrix *%s = %s(%s, %s);\n", 
+                                        e->name, 
+                                        function, 
+                                        e->left->name, 
+                                        e->right->name);
+            break;
+        }
+        case EXPR_FIELD: 
+            expr_codegen(e->left, regs);
+            e->name = e->left->name;
+            expr_codegen(e->right, regs);
+            break;
+        case EXPR_REGISTER: {
+            expr_codegen(e->left, regs);
+            if(e->left->kind == EXPR_FIELD) {
+                struct expr *temp = e->left;
+                char *result_name = var_create();
+                int reg_dimensions = temp->dimensions.columns;
+                fprintf(result_file, "quantum_state *%s = matrix_create_empty(%d, 1);\n", 
+                                        result_name, 
+                                        temp->dimensions.columns);
+                for(unsigned int i = 0; i < reg_dimensions; i++) {
+                    fprintf(result_file, "%s->fields[%u][0] = %s->fields[0][0];\n", 
+                                        result_name, 
+                                        i, 
+                                        temp->name);
+                    temp = temp->right;
+                }
+                e->left->name = result_name;
+            }
+            expr_codegen(e->right, regs);
+            if(e->right != NULL) {
+                e->name = var_create();
+                fprintf(result_file, "quantum_state *%s = matrix_tensor_product(%s, %s);\n", 
+                                        e->name, 
+                                        e->left->name, 
+                                        e->right->name);
+            }
+            else e->name = e->left->name;
+            break;
+        }
+        case EXPR_MEASURE: 
+            e->name = var_create();
+            if(e->right == NULL) {
+                WHOLE_SYSTEM_MEASUREMENT_CODEGENERATOR:
+                fprintf(result_file, "qm_result *%s = quantum_state_measure(%s);\n", 
+                                        e->name, 
+                                        regs->name);
+            }
+            else {
+                unsigned int scope = (e->reg.end - e->reg.start + 1);
+                unsigned int systems = regs->dimensions.rows / 2 / scope;
+                if(systems <= 1) goto WHOLE_SYSTEM_MEASUREMENT_CODEGENERATOR;
+                unsigned int system_index;
+                if(scope - 1 + e->reg.start == 0) system_index = 0;
+                else system_index = systems / (scope - 1 + e->reg.start) - 1;
+                fprintf(result_file, "qm_result *%s "
+                                    "= quantum_state_measure_subsystem(%s, %d, %d);\n", 
+                                        e->name, 
+                                        regs->name, 
+                                        system_index, 
+                                        systems);
+                regs->dimensions.rows /= systems;
+                printf("Reg rows = %d \n", regs->dimensions.rows);
+            }
+            regs->name = var_create();
+            fprintf(result_file, "quantum_state *%s = %s->state;\n", 
+                                        regs->name, 
+                                        e->name);
+            fprintf(result_file, 
+                "printf(CYN\"Quantum state of the system after measurement: \\n\"GRN);\n"
+                "matrix_print(%s);\n"
+                "printf(CYN\"Classical bit representation: \"GRN\"%%d \\n\"RESET, "
+                                                                            "%s->value);\n", 
+                                        regs->name, 
+                                        e->name);
+            break;
+        case EXPR_RANGE: 
+            expr_codegen(e->left, regs);
+            expr_codegen(e->right, regs);
+            break;
+        case EXPR_APPLY_GATE: 
+            expr_codegen(e->left, regs);
+            if(e->right != NULL) {
+                /* 
+
+                   This is a version that will work even if in the future 
+                   Q Assembly has support for runtime variable assignment.
+                   For now, it just gives more flexibility an ease of use
+                   in the generated C file with Q-SET instructions.
+
+                */
+                expr_codegen(e->right, regs);
+                char *start_name = NULL;
+                char *end_name = NULL;
+                if(e->right->kind == EXPR_RANGE) {
+                    start_name = e->right->left->name;
+                    end_name = e->right->right->name;
+                }
+                else {
+                    start_name = e->right->name;
+                    end_name = e->right->name;
+                }
+                e->name = var_create();
+                fprintf(result_file, 
+                    "quantum_gate *%s = NULL;\n"
+                    "for(unsigned int i = 0; i < %s->rows;) {\n"
+                    "\tif(i < %s->fields[0][0].real * 2 || i > %s->fields[0][0].real * 2) {\n"
+                    "\t\tif(!%s) %s = quantum_gate_create(2);\n"
+                    "\t\telse %s = matrix_tensor_product(%s, quantum_gate_create(2));\n"
+                    "\t\ti+=2;\n"
+                    "\t}\n"
+                    "\telse if(i <= %s->fields[0][0].real * 2) {\n"
+                    "\t\tif(!%s) %s = %s;\n"
+                    "\t\telse %s = matrix_tensor_product(%s, %s);\n"
+                    "\t\ti += (%s->fields[0][0].real + 1) * 2;\n"
+                    "\t}\n"
+                    "}\n",              e->name, 
+                                        regs->name, 
+                                        start_name, end_name, 
+                                        e->name, e->name, 
+                                        e->name, e->name, 
+                                        end_name, 
+                                        e->name, e->name, e->left->name, 
+                                        e->name, e->name, e->left->name, 
+                                        end_name);
+            }
+            else e->name = e->left->name;
+            break;
+        case EXPR_AND: 
+        case EXPR_CIRCUIT_STEP: 
+            expr_codegen(e->left, regs);
+            if(e->left->kind == EXPR_APPLY_GATE) {
+                char *old_regs_name = regs->name;
+                regs->name = var_create();
+                fprintf(result_file, "quantum_state *%s = matrix_mul(%s, %s);\n", 
+                                        regs->name, 
+                                        e->left->name, 
+                                        old_regs_name);
+            }
+            // If e->left->kind == EXPR_MEASURE, then the reg->name field will already
+            // be changed to the new register after the measurement.
+            // That's why we don't need to check for this case.
+            if(e->right) expr_codegen(e->right, regs);
+            break;
+    }
 }

@@ -1,7 +1,7 @@
 #ifndef QUBITS_H
 #define QUBITS_H
 
-#include "linear_algebra/linear_algebra.h"
+#include "../linear_algebra/linear_algebra.h"
 #include "operators.h"
 
 typedef vector quantum_state;

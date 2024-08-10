@@ -1,7 +1,7 @@
 #ifndef OPERATORS_H
 #define OPERATORS_H
 
-#include "linear_algebra/linear_algebra.h"
+#include "../linear_algebra/linear_algebra.h"
 
 #include <math.h>
 

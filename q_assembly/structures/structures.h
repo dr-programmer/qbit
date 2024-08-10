@@ -104,4 +104,7 @@ struct dimensions expr_typecheck(struct expr * const e);
 void decl_coderun(struct decl * const d);
 struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs);
 
+void decl_codegen(struct decl * const d);
+void expr_codegen(struct expr * const e, struct expr * const regs);
+
 #endif

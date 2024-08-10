@@ -21,6 +21,8 @@ extern struct decl *parser_result;
 
 struct scope *symbol_table = NULL;
 
+FILE *result_file = NULL;
+
 int main(int argc, char **argv) {S
     //smart_allocation_setup();
     S
@@ -104,6 +106,17 @@ int main(int argc, char **argv) {S
 
         if(!error_count) {
             decl_coderun(parser_result);
+            result_file = fopen("../q_assembly/test_cases/test_5.qs.c", "w");
+            if(result_file == NULL) printf("Cannot open file! \n");
+            fprintf(result_file, "#include <stdio.h>\n"
+                                    "#include <math.h>\n"
+                                    "#include <time.h>\n"
+                                    "#define SMART_DEALLOCATION\n"
+                                    "#include \"../../qbit.h\"\n");
+            fprintf(result_file, "\nint main() {S\nsrand(time(0));\n");
+            decl_codegen(parser_result);
+            fprintf(result_file, "E\nreturn 0;\n}\n");
+            fclose(result_file);
         }
         printf("\nProgram compiled with %d error/s \n", error_count);
     }
