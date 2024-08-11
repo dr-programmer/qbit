@@ -23,6 +23,8 @@ struct scope *symbol_table = NULL;
 
 FILE *result_file = NULL;
 
+unsigned short compile_time_calculations = 0;
+
 int main(int argc, char **argv) {S
     //smart_allocation_setup();
     S

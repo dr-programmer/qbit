@@ -577,17 +577,59 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
 
 extern FILE *result_file;
 
+extern unsigned short compile_time_calculations;
+
+static char *var_create() {
+    static unsigned int count = 0;
+    char *result = (char *)smart_allocate(1 + log10(count) + 1, sizeof(char));
+    sprintf(result, "t%u", count++);
+    return result;
+}
 void decl_codegen(struct decl * const d) {
     if(!d) return;
-printf("Here \n");
+
     if(d->name == NULL) {
-        expr_codegen(d->value, NULL);
+        if(compile_time_calculations) {
+            quantum_state *registers = expr_coderun(d->value, NULL);
+            d->value->name = var_create();
+            fprintf(result_file, "quantum_state *%s = matrix_create_empty(%d, 1);\n", 
+                                            d->value->name, 
+                                            registers->rows);
+            for(unsigned int i = 0; i < registers->rows; i++) {
+                for(unsigned int j = 0; j < registers->columns; j++) {
+                    fprintf(result_file, "%s->fields[%u][%u] = complex_create(%f, %f);\n", 
+                                            d->value->name, 
+                                            i, 
+                                            j, 
+                                            registers->fields[i][j].real, 
+                                            registers->fields[i][j].imaginary);
+                }
+            }
+        }
+        else expr_codegen(d->value, NULL);
         expr_codegen(d->circuit, d->value);
     }
     else {
-        expr_codegen(d->value, NULL);
-        printf("After expr_codegen() \n");
-        if(d->value->kind == EXPR_FIELD) {
+        if(!compile_time_calculations) expr_codegen(d->value, NULL);
+        if(compile_time_calculations) {
+            struct matrix *temp = expr_coderun(d->value, NULL);
+            if(d->value->kind == EXPR_FIELD) temp = get_quantum_operator(temp, d->dimensions);
+            d->operator = temp;
+            fprintf(result_file, "quantum_gate *%s = quantum_gate_create(%d);\n", 
+                                            d->name, 
+                                            d->dimensions.rows);
+            for(unsigned int i = 0; i < d->dimensions.rows; i++) {
+                for(unsigned int j = 0; j < d->dimensions.columns; j++) {
+                    fprintf(result_file, "%s->fields[%u][%u] = complex_create(%f, %f);\n", 
+                                            d->name, 
+                                            i, 
+                                            j, 
+                                            d->operator->fields[i][j].real, 
+                                            d->operator->fields[i][j].imaginary);
+                }
+            }
+        }
+        else if(d->value->kind == EXPR_FIELD) {
             fprintf(result_file, "quantum_gate *%s = quantum_gate_create(%d);\n", 
                                             d->name, 
                                             d->dimensions.rows);
@@ -603,18 +645,12 @@ printf("Here \n");
                 }
             }
         }
-        else fprintf(result_file, "quantum_state *%s = %s;\n", 
+        else fprintf(result_file, "quantum_gate *%s = %s;\n", 
                                             d->name, 
                                             d->value->name);
     }
 
     decl_codegen(d->next);
-}
-char *var_create() {
-    static unsigned int count = 0;
-    char *result = (char *)smart_allocate(1 + log10(count) + 1, sizeof(char));
-    sprintf(result, "t%u", count++);
-    return result;
 }
 void expr_codegen(struct expr * const e, struct expr * const regs) {
     if(!e) return;
@@ -678,10 +714,8 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
             break;
         case EXPR_TENSOR_PRODUCT: 
         case EXPR_ADD ... EXPR_MUL: {
-            printf("Binary operation \n");
             expr_codegen(e->left, regs);
             expr_codegen(e->right, regs);
-            printf("expr left name = %s \n", e->left->name);
             e->name = var_create();
             char *function = NULL;
             if(e->kind == EXPR_ADD) function = "matrix_add";
@@ -751,7 +785,6 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                                         system_index, 
                                         systems);
                 regs->dimensions.rows /= systems;
-                printf("Reg rows = %d \n", regs->dimensions.rows);
             }
             regs->name = var_create();
             fprintf(result_file, "quantum_state *%s = %s->state;\n", 
