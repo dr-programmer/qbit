@@ -289,6 +289,12 @@ void smart_allocation_stack_pop() {
     free(tempI);
 }
 
+void smart_allocation_stack_clean() {
+    while(allocated) {
+        smart_allocation_stack_pop();
+    }
+}
+
 // ↑ With SMART_DEALLOCATION
 // ------------------------------------------------------------------------
 // ↓ Without SMART_DEALLOCATION
