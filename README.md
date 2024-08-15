@@ -244,7 +244,7 @@ struct matrix *matrix_create(const unsigned int rows, const unsigned int columns
     B(temp, temp->fields)            // 'Binds' the temp->fields pointer to temp
     for(unsigned int i = 0; i < rows; i++) {
         temp->fields[i] = (struct complex *)smart_allocate(columns, sizeof(struct complex));
-        B(temp, temp->fields[i])    // 'Binds' the temp->fields[i] pointer to temp
+        B(temp, temp->fields[i])     // 'Binds' the temp->fields[i] pointer to temp
         temp->fields[i][i % columns] = complex_create(1, 0);
     }
     return temp;
@@ -282,7 +282,7 @@ The following must be installed in order to build the **Q-bit project**:
 ### Build on Linux
  1. Install the dependencies
 
-    ```
+    ```console
     sudo apt-get install build-essential flex bison git
     ```
 
@@ -291,25 +291,25 @@ The following must be installed in order to build the **Q-bit project**:
 
  2. Clone the **Q-bit** github repository in your desired location:
 
-    ```
+    ```console
     git clone https://github.com/dr-programmer/qbit.git
     ```
 
  3. Head to the **Q-bit** directory:
 
-    ```
+    ```console
     cd qbit
     ```
 
  4. Build the project:
 
-    ```
+    ```console
     make
     ```
 
 ## The Q-bit CLI
 ### Basic usage
-```
+```console
 qbit [--flags] filename.qs [--flags]
 ```
 > [!TIP]
@@ -318,7 +318,7 @@ qbit [--flags] filename.qs [--flags]
 ### Flags
   - `filename.qs` - **Q-bit** will _coderun_ the provided **Q Assembly** file. Read more about [The Coderunner](#structure-1).
   - `-gen-qset [executable filename]` - Tells the **Q Assembly** compiler to generate a **Q-SET** instructions file from the previously provided **Q Assembly** file and then converts it to an executable. Read more about [The Codegenerator](#structure-1).
-  - `--fast-run` - An additional specifier to the `-gen-qset [executable filename]` flag that tells the **Q Assembly** compiler to run the **Coderunner** on the definitions of all the **quantum gates** and **quantum registers**, and run the **Coderunner** only on the **quantum circuit** itself.
+  - `--fast-run` - An additional specifier to the `-gen-qset [executable filename]` flag that tells the **Q Assembly** compiler to run the **Coderunner** on the definitions of all the **quantum gates** and **quantum registers**, and run the **Codegenerator** only on the **quantum circuit** itself.
   - `--show-pcode` - Tells the **Q Assembly** compiler to **structure** and **print** the parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
 
 > [!TIP]
