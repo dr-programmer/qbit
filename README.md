@@ -3,7 +3,7 @@
 ### What is Q-bit?
   **Q-bit** is a quantum simulator project containg the following parts:
    - a **quantum computer simulator** and its **Q-SET** instruction set
-   - a first of its kind quantum circuit-like assembly language, called **Q Assembly**
+   - a first of its kind **quantum circuit-like assembly language**, called **Q Assembly**
    - an **automated scope-based dynamic memory management system** written in C, named **SMART**
 
 ### The Q-bit quantum computer simulator
@@ -53,7 +53,7 @@ graph TD;
 
   #### **Usage**
    - the quantum simulator can be used in C and C++ after including the `qbit.h` header file and linking the `libqbit.a` static library
-   - to learn more about the building process, read the [Build section]()
+   - to learn more about the building process, read the [Build section](#build)
 
   #### **Example**
 ```C
@@ -144,12 +144,12 @@ graph TD;
   E[Codegenerator];
 ```
 > [!TIP]
-> If the `compile_time_calculations` flag is enabled, the **Codegenerator** can run the **Coderunner** for some parts of the program. Read more about about [The Q Assembly CLI]()
+> If the `compile_time_calculations` flag is enabled, the **Codegenerator** can run the **Coderunner** for some parts of the program. Read more about about [The Q-bit CLI](#the-q-bit-cli)
 
   #### **Usage**
    - the **Q Assembly** language file extension is `.qs`
    - after creating your **Q Assembly** quantum program, it can be run with the `qbit` executable
-   - learn more about [The Q Assembly CLI]()
+   - learn more about [The Q-bit CLI](#the-q-bit-cli)
 
   #### **Example**
 ```
@@ -196,8 +196,8 @@ PARAM_GATE (
    - despite all the **automations**, if needed, it also has more **barebones features**, but with added **protection** against e.g. **double free** and **null free**
 
   #### **Usage**
-   - SMART can be used in C and C++ afer including the `smart_allocation.h` or `qbit.h` header files and linking either the `smart_allocation.c.o` object file or the static library `libqbit.a`
-   - to learn more about the building process, read the [Build section]()
+   - **SMART** can be used in C and C++ after including the `smart_allocation.h` or `qbit.h` header files and linking either the `smart_allocation.c.o` object file or the static library `libqbit.a`
+   - to learn more about the building process, read the [Build section](#build)
 
   #### **Syntax**
   **SMART** uses a set of **functions** and **preprocessor macros** to invoke its **intrinsic functions**, listed below:
@@ -260,12 +260,66 @@ S            // Creates an allocation scope
     S        // Creates an allocation scope
         struct matrix *m = matrix_create(2, 2);
         m = matrix_add(m, matrix_create(2, 2));
-        P(m) // 'Promotes' a pointer and all its children to a higher-level scope
+        P(m) // 'Promotes' the pointer m and all its children to a higher-level scope
     E        // Signifies the end of an allocation scope and all memory in it is freed
-    smart_free(a);    // Frees a specific pointer and all its children
+    smart_free(a);    // Frees the pointer a and all its children
     smart_free(a);    // Won't yield an error because smart_free() has double free protection
     smart_free(NULL); // Won't yield an error because smart_free() has null free protection
 E            // Signifies the end of an allocation scope and all memory in it is freed
     return 0;
 }
 ```
+
+## Build
+### Build dependencies
+The following must be installed in order to build the **Q-bit project**:
+  - `gcc`
+  - `make`
+  - `flex`
+  - `bison`
+  - `git`
+
+### Build on Linux
+ 1. Install the dependencies
+
+    ```
+    sudo apt-get install build-essential flex bison git
+    ```
+
+> [!IMPORTANT]
+> Make sure to run `sudo apt-get update` and then `sudo apt-get upgrade` before installing any of the dependencies.
+
+ 2. Clone the **Q-bit** github repository in your desired location:
+
+    ```
+    git clone https://github.com/dr-programmer/qbit.git
+    ```
+
+ 3. Head to the **Q-bit** directory:
+
+    ```
+    cd qbit
+    ```
+
+ 4. Build the project:
+
+    ```
+    make
+    ```
+
+## The Q-bit CLI
+### Basic usage
+```
+qbit [--flags] filename.qs [--flags]
+```
+> [!TIP]
+> If you run the **qbit executable** without any **flags** and **file names**, **qbit** will run its test programs.
+
+### Flags
+  - `filename.qs` - **Q-bit** will _coderun_ the provided **Q Assembly** file. Read more about [The Coderunner](#structure-1).
+  - `-gen-qset [executable filename]` - Tells the **Q Assembly** compiler to generate a **Q-SET** instructions file from the previously provided **Q Assembly** file and then converts it to an executable. Read more about [The Codegenerator](#structure-1).
+  - `--fast-run` - An additional specifier to the `-gen-qset [executable filename]` flag that tells the **Q Assembly** compiler to run the **Coderunner** on the definitions of all the **quantum gates** and **quantum registers**, and run the **Coderunner** only on the **quantum circuit** itself.
+  - `--show-pcode` - Tells the **Q Assembly** compiler to **structure** and **print** the parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
+
+> [!TIP]
+> **Q-bit** uses a convention which implies that **flags** starting with `-` **require** an additional **specifier** after them, and **flags** with `--` **do not**.
