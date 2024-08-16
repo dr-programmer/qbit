@@ -47,12 +47,12 @@ graph TD;
 > The base types in the simulator are the `struct complex` and `struct matrix` types from the math library. Every other type derives from them _(except for the `qm_result` and `quantum_measurement_result` types)_. That way the type system is explicit but also allows for seamless integration between the linear algebra functions and the quantum operations.
 
   #### **Q-SET**
-   - for the creation of the quantum simulator an instruction set had to be developed - **Q-SET**
-   - **Q-SET** includes all the necessary mathematical and quantum operations a quantum computer has to be able to perform
-   - the functions in the implementation of the quantum simulator are essentially the **Q-SET** instructions the simulated quantum computer executes
+   - for the creation of the quantum simulator an **instruction set** had to be developed - **Q-SET**
+   - **Q-SET** includes **all** the necessary **mathematical** and **quantum** operations a **quantum computer** has to be able to perform
+   - the **functions** in the implementation of the quantum simulator are essentially the **Q-SET** **instructions** the simulated **quantum computer** executes
 
   #### **Usage**
-   - the quantum simulator can be used in C and C++ after including the `qbit.h` header file and linking the `libqbit.a` static library
+   - the quantum simulator can be used in **C** and **C++** after including the `qbit.h` header file and linking the `libqbit.a` static library
    - to learn more about the building process, read the [Build section](#build)
 
   #### **Example**
@@ -114,24 +114,25 @@ short algorithm_deutsch(const quantum_gate * const gate) {
    - also, **Q Assembly** incorporates some parts _(although not many)_ from [**Quark**](https://github.com/dr-programmer/quark), making it the first language of the **Quark family**
 
   #### **Purpose**
-   - **Q Assembly** makes it easier to implement quantum circuits as its grammar is specifically designed for them
-   - it is much more readable and easier to understand than a full-blown **Q-SET** instructions file
-   - it also gives a great middle ground for higher level quantum computer languages to use as an intermediate representation
+   - **Q Assembly** makes it easier to implement **quantum circuits** as its grammar is **specifically designed** for them
+   - it is much more **readable** and **easier to understand** than a full-blown **Q-SET** instructions file
+   - **Q Assembly** boasts a **fully modular** compiler design, which is **perfect** for **future quantum computer languages** to use as a **core** and build **new features** **on top**
+   - it also gives a **great middle ground** for **higher level quantum computer languages** to use as an **intermediate representation**
 
 > [!NOTE]
 > More conventional classical computer-like higher level quantum computer languages are better off directly using **Q-SET** instructions.
 
   #### **Structure**
-   1. **Scanner** → "Scans" the given file and creates and returns all the tokens which are the words of the language _(If an invalid token is reached, it returns an error)_
+   1. **Scanner** → "Scans" the given **file** and creates and returns all the **tokens**, which are the words of the language _(If an invalid token is reached, it returns an error)_
       - Written in **flex**
-   2. **Parser** → "Parses" the tokens _(the output of the Scanner)_, applies syntax checks and structures them in a large data structure - **Abstract Syntax Tree**, also refered to as **AST**
+   2. **Parser** → "Parses" the **tokens** _(the output of the Scanner)_, applies **syntax checks** and structures them in a large data structure - **Abstract Syntax Tree**, also refered to as **AST**
       - Written in **bison**
-   3. **Semantic Analyser** → "Analyses" the AST, performes name resolution using a symbol table _(implemented with a stack of hash tables)_ and applies math type checking _(essentially checking whether linear algebra and quantum operations are applies to operands of correct dimensions)_
+   3. **Semantic Analyser** → "Analyses" the **AST**, performes **name resolution** using a **symbol table** _(implemented with a stack of hash tables)_ and applies **math type checking** _(essentially checking whether linear algebra and quantum operations are applied to operands of correct dimensions)_
       - Written in **C**
-   4. **Coderunner** → Converts the **Q Assembly** instructions to **Q-SET** instructions and runs them directly on the Q-bit quantum computer simulator
+   4. **Coderunner** → Converts the **Q Assembly** instructions to **Q-SET** instructions and **runs** them directly on the **Q-bit quantum computer simulator**
       - Written in **C**
-   5. **Codegenerator** → Generates a **Q-SET** instructions file from the **Q Assembly** instructions and compiles it to an executable file, which can be run without the simulator on any classical computer
-      - The **Q-SET** instructions file is also left out. This enables for seamless integration and development between **Q Assembly** and **Q-SET**.
+   5. **Codegenerator** → Generates a **Q-SET** instructions **file** from the **Q Assembly** instructions and **compiles** it to an **executable file**, which **can** be run **without** the simulator on **any** classical computer
+      - The **Q-SET** instructions file is also left out. This enables for **seamless integration** and **development** between **Q Assembly** and **Q-SET**.
       - Written in **C**
 
   Below is a visual representation of the structure of the **Q Assembly** compiler:
@@ -191,8 +192,8 @@ PARAM_GATE (
    - it is written in **C** for **C**
 
   #### **Purpose**
-   - **SMART** removes the worry of memory leaks in any **C** program
-   - it is very easy and straightforward to use
+   - **SMART** **removes** the worry of **memory leaks** in any **C** program
+   - it is very **easy** and **straightforward** to use
    - despite all the **automations**, if needed, it also has more **barebones features**, but with added **protection** against e.g. **double free** and **null free**
 
   #### **Usage**
@@ -203,30 +204,30 @@ PARAM_GATE (
   **SMART** uses a set of **functions** and **preprocessor macros** to invoke its **intrinsic functions**, listed below:
 
   Always defined:
-   - `smart_allocate(num, size)` → allocates the desired amount of memory; the syntax resembles that of the built in `calloc` function
-   - `smart_free(ptr)` → frees the given pointer _(and all its children)_ and has protections against e.g. **double free** and **null free**
+   - `smart_allocate(num, size)` → **allocates** the desired amount of memory; the syntax resembles that of the built in `calloc` function
+   - `smart_free(ptr)` → **frees** the given pointer _(and all its children)_ and has protections against e.g. **double free** and **null free**
 
   If `SMART_DEALLOCATION` **is** defined before including the `smart_allocation.h` header file:
-   - `S` → defines the start of a new memory allocation scope
+   - `S` → defines the start of a **new memory allocation scope**
      - calls the intrinsic function `void smart_allocation_stack_push();`
-   - `E` → defines the end of a scope; when it is reached, all allocated variables inside that specific scope will be freed
+   - `E` → defines the **end of a scope**; when it is reached, all allocated variables inside that specific scope will be freed
      - calls the intrinsic function `void smart_allocation_stack_pop();`
-   - `P(PTR)` → defines a special feature of SMART - it 'promotes' a given pointer to a higher scope level so when its original scope is freed that pointer will still be allocated
+   - `P(PTR)` → defines a special feature of **SMART** - it **'promotes'** a given pointer to a **higher scope level** so when its original scope is freed that pointer will still be allocated
      - calls the intrinsic function `int smart_allocation_promote_ptr(const void * const ptr);`
-   - `B(PAR, CHILD)` → defines another special feature of SMART - it 'binds' a child pointer to a parent so that whatever happens to the parent is applied to the child as well; this is very useful for big data structures with many pointer fields, beacause if all the fields are bound to the main structure pointer, then when promoting or freeing the data structure, only the main pointer has to be promoted/freed
+   - `B(PAR, CHILD)` → defines another special feature of **SMART** - it **'binds'** a **child pointer** to a **parent** so that whatever happens to the parent is applied to the child as well; this is very useful for big data structures with many pointer fields, beacause if all the fields are bound to the main structure pointer, then when promoting or freeing the data structure, only the main pointer has to be promoted/freed
      - calls the intrinsic function `int smart_allocation_bind_ptr(const void * const par, const void * const child);`
-   - `C` → cleans all the scope levels and all memory is deallocated; useful when exiting a prorgam in the middle of the execution - the programmer doesn't need to worry about how many scope levels where allocated until now
+   - `C` → **cleans** all the scope levels and **all** memory is **deallocated**; useful when exiting a prorgam in the middle of the execution - the programmer doesn't need to worry about how many scope levels where allocated until now
      - calls the intrinsic function `void smart_allocation_stack_clean();`
 
 > [!TIP]
 > If `SMART_DEALLOCATION_EXPLICIT` is defined after `SMART_DEALLOCATION`, then `S` is converted to `START`, `E` to `END`, `P(PTR)` to `PROMOTE(PTR)`, `B(PAR, CHILD)` to `BIND(PAR, CHILD)` and `C` to `CLEAN`.
 
   If `SMART_DEALLOCATION` is **not** defined before including the `smart_allocation.h` header file:
-   - `smart_allocation_setup()` → creates a single scope where all the memory is allocated
-   - `smart_allocation_free()` → frees the entire global scope at the end of the program and all memory is freed
+   - `smart_allocation_setup()` → **creates** a single **scope** where all the memory is **allocated**
+   - `smart_allocation_free()` → **frees** the entire **global scope** at the end of the program and **all memory** is freed
 
 > [!NOTE]
-> Even when `SMART_DEALLOCATION` is **not** defined **SMART** allocates in a single global scope level that is compatible with the features from `SMART_DEALLOCATION`. That way in a single project, different files can have different allocation strategies but still be compatible with each other in the end. However, in most cases, it is advised to use `SMART_DEALLOCATION` in order to have a broader feature set.
+> Even when `SMART_DEALLOCATION` is **not** defined **SMART** allocates in a single global scope level that is **compatible** with the features from `SMART_DEALLOCATION`. That way, in a single project, different files can have different allocation strategies but still be compatible with each other in the end. However, in most cases, it is advised to use `SMART_DEALLOCATION` in order to have a broader feature set.
 
   #### **Logging**
   **SMART** can **display** its **internal behaviour** by **defining** the following **preprocessor macros** in the `smart_allocation.h` header file:
@@ -282,7 +283,7 @@ E            // Signifies the end of an allocation scope and all memory in it is
 
 ## Build
 ### Build dependencies
-The following must be installed in order to build the **Q-bit project**:
+The following **must** be **installed** in order to **build** the **Q-bit project**:
   - `gcc`
   - `make`
   - `flex`
@@ -328,7 +329,7 @@ qbit [--flags] filename.qs [--flags]
 ### Flags
   - `filename.qs` - **Q-bit** will _coderun_ the provided **Q Assembly** file. Read more about [The Coderunner](#structure-1).
   - `-gen-qset [executable filename]` - Tells the **Q Assembly** compiler to generate a **Q-SET** instructions file from the previously provided **Q Assembly** file and then converts it to an executable. Read more about [The Codegenerator](#structure-1).
-  - `--fast-run` - An additional specifier to the `-gen-qset [executable filename]` flag that tells the **Q Assembly** compiler to run the **Coderunner** on the definitions of all the **quantum gates** and **quantum registers**, and run the **Codegenerator** only on the **quantum circuit** itself.
+  - `--fast-run` - An additional specifier to the `-gen-qset [executable filename]` flag which enables the internal `compile_time_calculations` flag that tells the **Q Assembly** compiler to run the **Coderunner** on the definitions of all the **quantum gates** and **quantum registers**, and run the **Codegenerator** only on the **quantum circuit** itself.
   - `--show-pcode` - Tells the **Q Assembly** compiler to **structure** and **print** the parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
 
 > [!TIP]
