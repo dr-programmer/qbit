@@ -228,6 +228,16 @@ PARAM_GATE (
 > [!NOTE]
 > Even when `SMART_DEALLOCATION` is **not** defined **SMART** allocates in a single global scope level that is compatible with the features from `SMART_DEALLOCATION`. That way in a single project, different files can have different allocation strategies but still be compatible with each other in the end. However, in most cases, it is advised to use `SMART_DEALLOCATION` in order to have a broader feature set.
 
+  #### **Logging**
+  **SMART** can **display** its **internal behaviour** by **defining** the following **preprocessor macros** in the `smart_allocation.h` header file:
+   - `SMART_ALLOCATION_SHOW_PTR_CREATION`
+   - `SMART_ALLOCATION_SHOW_SEARCH`
+   - `SMART_ALLOCATION_SHOW_PROMOTION`
+   - `SMART_ALLOCATION_SHOW_BINDING`
+   - `SMART_ALLOCATION_SHOW_END_FREE`
+   - `SMART_ALLOCATION_SHOW_ALLOCATION`
+   - `SMART_ALLOCATION_SHOW_SMART_FREE`
+
   #### **Example**
 ```C
 #define SMART_DEALLOCATION
