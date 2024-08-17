@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./Q-bit_transparent_logo.png" width="380" />
+</p>
+
 # The Q-bit project
 ## About
 ### What is Q-bit?
