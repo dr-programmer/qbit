@@ -322,6 +322,16 @@ The following **must** be **installed** in order to **build** the **Q-bit projec
     make
     ```
 
+> [!NOTE]
+> The `make` command creates the `./build` **directory** which contains all the **object files**, the static **library** and the **executable**. The **directory structure** inside `./build` is **the same** as that of the **source directory**. Read more about [The Build directory]().
+
+ 5. Add the following lines at the end of your `~/.bashrc` file:
+
+    ```bash
+    export PATH=$PATH:[path-to-qbit]/qbit/build
+    export LIBRARY_PATH=$LIBRARY_PATH:[path-to-qbit]/qbit/build
+    ```
+
 ## The Q-bit CLI
 ### Basic usage
 ```console
