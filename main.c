@@ -30,6 +30,9 @@ unsigned short compile_time_calculations = 0;
 
 int main(int argc, char **argv) {S
     //smart_allocation_setup();
+
+    srand(time(0));
+
     if(argc == 1) {
     S
         vector *v1 = vector_create();
@@ -57,7 +60,6 @@ int main(int argc, char **argv) {S
         matrix_print(tensor);
         printf("\n");
 
-        srand(time(0));
         printf("Von Neumann measurement in the computational basis of |+>: \n");
         qubit *one = qubit_create_init(complex_create(1/sqrt(2), 0), 
                 complex_create(1/sqrt(2), 0));
