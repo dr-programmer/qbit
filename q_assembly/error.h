@@ -1,0 +1,10 @@
+#ifndef ERROR_H
+#define ERROR_H
+
+enum {
+    ERROR_OPENING_FILE, 
+    ERROR_ALLOCATING_MEMORY, 
+    ERROR_WRONG_CLI_FLAGS
+};
+
+#endif
