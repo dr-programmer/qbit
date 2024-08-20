@@ -341,13 +341,13 @@ The following **must** be **installed** in order to **build** the **Q-bit projec
 ## The Q-bit CLI
 ### Basic usage
 ```console
-qbit [--flags] filename.qs [--flags]
+qbit [--flags] filename.qsm [--flags]
 ```
 > [!TIP]
 > If you run the **qbit executable** without any **flags** and **file names**, **qbit** will run its test programs.
 
 ### Flags
-  - `filename.qs` - **Q-bit** will _coderun_ the provided **Q Assembly** file. Read more about [The Coderunner](#structure-1).
+  - `filename.qsm` - **Q-bit** will _coderun_ the provided **Q Assembly** file. Read more about [The Coderunner](#structure-1).
   - `-gen-qset [executable filename]` - Tells the **Q Assembly** compiler to generate a **Q-SET** instructions file from the previously provided **Q Assembly** file and then converts it to an executable. Read more about [The Codegenerator](#structure-1).
   - `--fast-run` - An additional specifier to the `-gen-qset [executable filename]` flag which enables the internal `compile_time_calculations` flag that tells the **Q Assembly** compiler to run the **Coderunner** on the definitions of all the **quantum gates** and **quantum registers**, and run the **Codegenerator** only on the **quantum circuit** itself.
   - `--show-pcode` - Tells the **Q Assembly** compiler to **structure** and **print** the parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
