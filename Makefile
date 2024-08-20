@@ -5,7 +5,7 @@ BUILD_DIR := ./build
 
 SRCS := $(shell find $(SRC_DIR) -name '*.c' -or -name '*.s' -or -name '*.l' -or -name '*.y')
 SRCS := $(filter-out $(SRC_DIR)/%.l.c $(SRC_DIR)/%.y.c, $(SRCS))
-SRCS := $(filter-out $(SRC_DIR)/%.qs.c, $(SRCS))
+SRCS := $(filter-out $(SRC_DIR)/%.qsm.c, $(SRCS))
 
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.c.o)
 OBJS := $(OBJS:$(SRC_DIR)/%.s=$(BUILD_DIR)/%.s.o)
