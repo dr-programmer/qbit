@@ -152,7 +152,7 @@ graph TD;
 > If the `compile_time_calculations` flag is enabled, the **Codegenerator** can run the **Coderunner** for some parts of the program. Read more about about [The Q-bit CLI](#the-q-bit-cli)
 
   #### **Usage**
-   - the **Q Assembly** language file extension is `.qs`
+   - the **Q Assembly** language file extension is `.qsm`
    - after creating your **Q Assembly** quantum program, it can be run with the `qbit` executable
    - learn more about [The Q-bit CLI](#the-q-bit-cli)
 
@@ -325,7 +325,13 @@ The following **must** be **installed** in order to **build** the **Q-bit projec
 > [!NOTE]
 > The `make` command creates the `./build` **directory** which contains all the **object files**, the static **library** and the **executable**. The **directory structure** inside `./build` is **the same** as that of the **source directory**. Read more about [The Build directory]().
 
- 5. Add the following lines at the end of your `~/.bashrc` file:
+ 5. Build the **Q-bit** static library:
+
+    ```console
+    make build-lib
+    ```
+
+ 6. Add the following lines at the end of your `~/.bashrc` file:
 
     ```bash
     export PATH=$PATH:[path-to-qbit]/qbit/build
