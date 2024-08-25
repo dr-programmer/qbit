@@ -19,14 +19,16 @@ LETTERS [a-zA-Z]
 \*          {return TOKEN_MUL;}
 \/          {return TOKEN_DIV;}
 \%          {return TOKEN_MODULUS;}
-\#          {return TOKEN_SQRT;}
 \@          {return TOKEN_TENSOR_PRODUCT;}
+\^          {return TOKEN_POWER;}
+\^\@        {return TOKEN_TENSOR_PRODUCT_N_TIMES;}
+\#          {return TOKEN_SQRT;}
 \&\&        {return TOKEN_AND;}
 \<\?        {BEGIN(multiline_comment);}
 <multiline_comment>[^\?]*
 <multiline_comment>\?+[^\?\>]*
 <multiline_comment>\?\>     {BEGIN(INITIAL);}
-\?\?.*"\n"
+\?\?.*"\n"  {line++;}
 "<"         {return TOKEN_LESS;}
 >           {return TOKEN_GREATER;}
 \.{3}       {return TOKEN_RANGE;}

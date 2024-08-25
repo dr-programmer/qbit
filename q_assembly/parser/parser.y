@@ -29,7 +29,7 @@ struct decl *parser_result;
 };
 
 %type <decl> program decl_list decl
-%type <expr> expr algebra term factor fields next_expr registers reg circuit c_step
+%type <expr> expr algebra term difactor factor fields next_expr registers reg circuit c_step
 %type <expr> subsystem range concurrent_gate
 %type <str> name
 %type <complex> number
@@ -51,8 +51,11 @@ struct decl *parser_result;
 %token TOKEN_DIV
 %token TOKEN_MODULUS
 
-%token TOKEN_SQRT
 %token TOKEN_TENSOR_PRODUCT
+%token TOKEN_POWER
+%token TOKEN_TENSOR_PRODUCT_N_TIMES
+
+%token TOKEN_SQRT
 
 %token TOKEN_LESS
 %token TOKEN_GREATER
@@ -104,12 +107,28 @@ algebra : algebra TOKEN_PLUS term
         | term                  { $$ = $1; }
         ;
 
-term    : term TOKEN_MUL factor { $$ = expr_create(EXPR_MUL, $1, $3, line); }
-        | term TOKEN_DIV factor { $$ = expr_create(EXPR_DIV, $1, $3, line); }
-        | term TOKEN_MODULUS factor
+term    : term TOKEN_MUL difactor
+                                { $$ = expr_create(EXPR_MUL, $1, $3, line); }
+        | term TOKEN_DIV difactor
+                                { $$ = expr_create(EXPR_DIV, $1, $3, line); }
+        | term TOKEN_MODULUS difactor
                                 { $$ = expr_create(EXPR_MODULUS, $1, $3, line); }
-        | term TOKEN_TENSOR_PRODUCT factor
+        | term TOKEN_TENSOR_PRODUCT difactor
                                 { $$ = expr_create(EXPR_TENSOR_PRODUCT, $1, $3, line); }
+        | difactor              { $$ = $1; }
+        ;
+
+difactor: difactor TOKEN_POWER factor
+                                { $$ = expr_create(EXPR_POWER, $1, $3, line); }
+        | difactor TOKEN_TENSOR_PRODUCT_N_TIMES factor
+                                { 
+                                        $$ = expr_create(
+                                                EXPR_TENSOR_PRODUCT_N_TIMES, 
+                                                $1, 
+                                                $3, 
+                                                line
+                                        ); 
+                                }
         | factor                { $$ = $1; }
         ;
 

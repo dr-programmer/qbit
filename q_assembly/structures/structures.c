@@ -101,6 +101,10 @@ void expr_print(const struct expr * const e, const int tabs) {
                                         expr_print(e->right, 0); printf(")"); break;
         case EXPR_TENSOR_PRODUCT: printf("("); expr_print(e->left, 0); printf(" @ "); 
                                         expr_print(e->right, 0); printf(")"); break;
+        case EXPR_POWER: printf("("); expr_print(e->left, 0); printf("^"); 
+                                        expr_print(e->right, 0); printf(")"); break;
+        case EXPR_TENSOR_PRODUCT_N_TIMES: printf("("); expr_print(e->left, 0); printf("^@"); 
+                                        expr_print(e->right, 0); printf(")"); break;
         case EXPR_AND: expr_print(e->left, 0); 
                             if(e->right) {
                                 printf(" && ");

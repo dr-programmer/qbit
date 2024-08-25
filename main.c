@@ -94,6 +94,17 @@ int main(int argc, char **argv) {S
         printf("Free 0: %d \nFree 1: %d \n", check0, check1);
 
         printf("\nDeutsch algorithm: %hd \n", algorithm_deutsch(quantum_gate_create_cnot()));
+
+        struct complex num = complex_create(3.6, 3.2);
+        struct complex num_pow = complex_create(4.5, 1.2);
+        struct complex num_result = complex_pow(num, num_pow);
+        printf("\n(");
+        complex_print(num);
+        printf(") to the power of (");
+        complex_print(num_pow);
+        printf("):\nresult = ");
+        complex_print(num_result);
+        printf("\n");
         C
         exit(0);
     E

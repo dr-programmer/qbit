@@ -76,20 +76,22 @@ extern int yydebug;
     TOKEN_MUL = 266,               /* TOKEN_MUL  */
     TOKEN_DIV = 267,               /* TOKEN_DIV  */
     TOKEN_MODULUS = 268,           /* TOKEN_MODULUS  */
-    TOKEN_SQRT = 269,              /* TOKEN_SQRT  */
-    TOKEN_TENSOR_PRODUCT = 270,    /* TOKEN_TENSOR_PRODUCT  */
-    TOKEN_LESS = 271,              /* TOKEN_LESS  */
-    TOKEN_GREATER = 272,           /* TOKEN_GREATER  */
-    TOKEN_LPAREN = 273,            /* TOKEN_LPAREN  */
-    TOKEN_RPAREN = 274,            /* TOKEN_RPAREN  */
-    TOKEN_LCRBR = 275,             /* TOKEN_LCRBR  */
-    TOKEN_RCRBR = 276,             /* TOKEN_RCRBR  */
-    TOKEN_LSQBR = 277,             /* TOKEN_LSQBR  */
-    TOKEN_RSQBR = 278,             /* TOKEN_RSQBR  */
-    TOKEN_COMMA = 279,             /* TOKEN_COMMA  */
-    TOKEN_COLON = 280,             /* TOKEN_COLON  */
-    TOKEN_SEMI = 281,              /* TOKEN_SEMI  */
-    TOKEN_ERROR = 282              /* TOKEN_ERROR  */
+    TOKEN_TENSOR_PRODUCT = 269,    /* TOKEN_TENSOR_PRODUCT  */
+    TOKEN_POWER = 270,             /* TOKEN_POWER  */
+    TOKEN_TENSOR_PRODUCT_N_TIMES = 271, /* TOKEN_TENSOR_PRODUCT_N_TIMES  */
+    TOKEN_SQRT = 272,              /* TOKEN_SQRT  */
+    TOKEN_LESS = 273,              /* TOKEN_LESS  */
+    TOKEN_GREATER = 274,           /* TOKEN_GREATER  */
+    TOKEN_LPAREN = 275,            /* TOKEN_LPAREN  */
+    TOKEN_RPAREN = 276,            /* TOKEN_RPAREN  */
+    TOKEN_LCRBR = 277,             /* TOKEN_LCRBR  */
+    TOKEN_RCRBR = 278,             /* TOKEN_RCRBR  */
+    TOKEN_LSQBR = 279,             /* TOKEN_LSQBR  */
+    TOKEN_RSQBR = 280,             /* TOKEN_RSQBR  */
+    TOKEN_COMMA = 281,             /* TOKEN_COMMA  */
+    TOKEN_COLON = 282,             /* TOKEN_COLON  */
+    TOKEN_SEMI = 283,              /* TOKEN_SEMI  */
+    TOKEN_ERROR = 284              /* TOKEN_ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -105,7 +107,7 @@ union YYSTYPE
     char *str;
     struct complex complex;
 
-#line 109 "q_assembly/parser/token.h"
+#line 111 "q_assembly/parser/token.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

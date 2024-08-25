@@ -149,7 +149,7 @@ graph TD;
   E[Codegenerator];
 ```
 > [!TIP]
-> If the `compile_time_calculations` flag is enabled, the **Codegenerator** can run the **Coderunner** for some parts of the program. Read more about about [The Q-bit CLI](#the-q-bit-cli)
+> If the `compile_time_calculations` flag is enabled, the **Codegenerator** can run the **Coderunner** for some parts of the program. Read more about about [The Q-bit CLI](#the-q-bit-cli).
 
   #### **Usage**
    - the **Q Assembly** language file extension is `.qsm`
