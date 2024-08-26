@@ -348,11 +348,41 @@ struct dimensions expr_typecheck(struct expr * const e) {
                 result.columns = left.columns * right.columns;
             }
             else {
-                result.rows = left.rows;
-                result.columns = right.columns;
+                if(left.rows == 1 && left.columns == 1) result = right;
+                else if(right.rows == 1 && right.columns == 1) result = left;
+                else {
+                    result.rows = left.rows;
+                    result.columns = right.columns;
+                }
             }
             break;
         }
+        case EXPR_POWER:
+            if(left.rows != 1 || left.columns != 1 || right.rows != 1 || right.columns != 1) 
+                printf_error(RED"Error "MAG 
+                    "|cannot apply binary complex operator "BLU"(%c)"MAG
+                    " between operands of dimension"BLU 
+                    " [%dx%d]"MAG" and "BLU"[%dx%d]"MAG"|"RESET 
+                    "\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                    '^', left.rows, left.columns, right.rows, right.columns, e, e->line);
+            result = left;
+            break;
+        case EXPR_TENSOR_PRODUCT_N_TIMES:
+            if(right.rows != 1 || right.columns != 1 
+                || e->right->complex_literal.imaginary != 0) {
+                printf_error(RED"Error "MAG 
+                    "|cannot apply binary operator "BLU"(%s)"MAG
+                    " on an operand of dimension"BLU 
+                    " [%dx%d]"MAG" with a given "BLU"non-real power"MAG"|"RESET 
+                    "\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                    "^@", left.rows, left.columns, e, e->line);
+                result = left;
+            }
+            else {
+                result.rows = pow(left.rows, (int)e->right->complex_literal.real);
+                result.columns = pow(left.columns, (int)e->right->complex_literal.real);
+            }
+            break;
         case EXPR_RANGE: 
             e->reg = reg_create(
                 e->left->complex_literal.real, 
@@ -486,6 +516,19 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             break;
         case EXPR_TENSOR_PRODUCT: S
             result = matrix_tensor_product(left, right);
+            P(result)
+            E
+            break;
+        case EXPR_POWER: S
+            result = matrix_mul_scalar(
+                complex_pow(left->fields[0][0], right->fields[0][0]), 
+                matrix_create(1, 1)
+            );
+            P(result)
+            E
+            break;
+        case EXPR_TENSOR_PRODUCT_N_TIMES: S
+            result = matrix_tensor_product_n_times(left, (int)right->fields[0][0].real);
             P(result)
             E
             break;
@@ -733,6 +776,29 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                                         e->right->name);
             break;
         }
+        case EXPR_POWER: 
+            expr_codegen(e->left, regs);
+            expr_codegen(e->right, regs);
+            e->name = var_create();
+            fprintf(result_file, "struct matrix *%s = matrix_create_empty(1, 1);\n", 
+                                        e->name);
+            fprintf(result_file, "%s->fields[0][0]"
+                                 " = complex_pow(%s->fields[0][0], %s->fields[0][0]);\n", 
+                                        e->name, 
+                                        e->left->name, 
+                                        e->right->name);
+            break;
+        case EXPR_TENSOR_PRODUCT_N_TIMES: 
+            expr_codegen(e->left, regs);
+            expr_codegen(e->right, regs);
+            e->name = var_create();
+            fprintf(result_file, "struct matrix *%s"
+                                 " = matrix_tensor_product_n_times"
+                                        "(%s, %s->fields[0][0].real);\n", 
+                                        e->name, 
+                                        e->left->name, 
+                                        e->right->name);
+            break;
         case EXPR_FIELD: 
             expr_codegen(e->left, regs);
             e->name = e->left->name;

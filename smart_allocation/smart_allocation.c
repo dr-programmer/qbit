@@ -186,12 +186,13 @@ int smart_allocation_promote_ptr(const void * const ptr) {
         printf("Promoting children %d\n", par_ptr->size);
         #endif
 
+        void *child = par_ptr->children[i]->ptr;
         allocated = tempS;
         allocated_indices = tempI;
-        smart_allocation_promote_ptr(par_ptr->children[i]->ptr);
+        smart_allocation_promote_ptr(child);
         allocated = allocated->next;
         allocated_indices = allocated_indices->next;
-        smart_allocation_bind_ptr(ptr, par_ptr->children[i]->ptr);
+        smart_allocation_bind_ptr(ptr, child);
     }
     allocated = tempS;
     allocated_indices = tempI;

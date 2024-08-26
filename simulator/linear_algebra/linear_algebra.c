@@ -125,6 +125,19 @@ struct matrix *matrix_tensor_product(const struct matrix * const m1,
     }
     return result;
 }
+struct matrix *matrix_tensor_product_n_times(const struct matrix * const m, 
+                                                const unsigned int n) 
+{
+    if(!m || !n) return NULL;
+    S
+    struct matrix *result = (struct matrix *)m;
+    for(unsigned int i = 1; i < n; i++) {
+        result = matrix_tensor_product(result, m);
+    }
+    P(result)
+    E
+    return result;
+}
 
 struct matrix *matrix_transpose(const struct matrix * const m) {
     if(!m) return NULL;

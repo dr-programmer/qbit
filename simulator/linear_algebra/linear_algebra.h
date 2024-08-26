@@ -24,6 +24,8 @@ struct matrix *matrix_mul_scalar(const struct complex s, const struct matrix * c
 
 struct matrix *matrix_tensor_product(const struct matrix * const m1, 
                                         const struct matrix * const m2);
+struct matrix *matrix_tensor_product_n_times(const struct matrix * const m, 
+                                                const unsigned int n);
 
 struct matrix *matrix_transpose(const struct matrix * const m);
 

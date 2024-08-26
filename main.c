@@ -105,6 +105,11 @@ int main(int argc, char **argv) {S
         printf("):\nresult = ");
         complex_print(num_result);
         printf("\n");
+
+        unsigned int n = 2;
+        struct matrix *hadamard_n_times = matrix_tensor_product_n_times(hadamard, n);
+        printf("\nThe Hadamard gate tensor product %u times with itself: \n", n);
+        matrix_print(hadamard_n_times);
         C
         exit(0);
     E
