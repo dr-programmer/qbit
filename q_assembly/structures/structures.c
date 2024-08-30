@@ -332,8 +332,8 @@ struct dimensions expr_typecheck(struct expr * const e) {
                             || (right.rows != 1 || right.columns != 1)) 
                         : 1;
             int tensor_check = e->kind == EXPR_TENSOR_PRODUCT 
-                        ? ((left.rows <= 1 || left.columns <= 1) 
-                            || (right.rows <= 1 || right.columns <= 1)) 
+                        ? ((left.rows <= 1 && left.columns <= 1) 
+                            || (right.rows <= 1 && right.columns <= 1)) 
                         : 1;
             if(add_sub_check && mul_check && div_check && tensor_check) 
                 printf_error(RED"Error "MAG 
