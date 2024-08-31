@@ -69,29 +69,31 @@ extern int yydebug;
     TOKEN_SEPARATOR = 259,         /* TOKEN_SEPARATOR  */
     TOKEN_NEXT = 260,              /* TOKEN_NEXT  */
     TOKEN_AND = 261,               /* TOKEN_AND  */
-    TOKEN_COMPLEX_LITERAL = 262,   /* TOKEN_COMPLEX_LITERAL  */
-    TOKEN_IDENT = 263,             /* TOKEN_IDENT  */
-    TOKEN_PLUS = 264,              /* TOKEN_PLUS  */
-    TOKEN_MINUS = 265,             /* TOKEN_MINUS  */
-    TOKEN_MUL = 266,               /* TOKEN_MUL  */
-    TOKEN_DIV = 267,               /* TOKEN_DIV  */
-    TOKEN_MODULUS = 268,           /* TOKEN_MODULUS  */
-    TOKEN_TENSOR_PRODUCT = 269,    /* TOKEN_TENSOR_PRODUCT  */
-    TOKEN_POWER = 270,             /* TOKEN_POWER  */
-    TOKEN_TENSOR_PRODUCT_N_TIMES = 271, /* TOKEN_TENSOR_PRODUCT_N_TIMES  */
-    TOKEN_SQRT = 272,              /* TOKEN_SQRT  */
-    TOKEN_LESS = 273,              /* TOKEN_LESS  */
-    TOKEN_GREATER = 274,           /* TOKEN_GREATER  */
-    TOKEN_LPAREN = 275,            /* TOKEN_LPAREN  */
-    TOKEN_RPAREN = 276,            /* TOKEN_RPAREN  */
-    TOKEN_LCRBR = 277,             /* TOKEN_LCRBR  */
-    TOKEN_RCRBR = 278,             /* TOKEN_RCRBR  */
-    TOKEN_LSQBR = 279,             /* TOKEN_LSQBR  */
-    TOKEN_RSQBR = 280,             /* TOKEN_RSQBR  */
-    TOKEN_COMMA = 281,             /* TOKEN_COMMA  */
-    TOKEN_COLON = 282,             /* TOKEN_COLON  */
-    TOKEN_SEMI = 283,              /* TOKEN_SEMI  */
-    TOKEN_ERROR = 284              /* TOKEN_ERROR  */
+    TOKEN_LOAD = 262,              /* TOKEN_LOAD  */
+    TOKEN_COMPLEX_LITERAL = 263,   /* TOKEN_COMPLEX_LITERAL  */
+    TOKEN_IDENT = 264,             /* TOKEN_IDENT  */
+    TOKEN_STRING_LITERAL = 265,    /* TOKEN_STRING_LITERAL  */
+    TOKEN_PLUS = 266,              /* TOKEN_PLUS  */
+    TOKEN_MINUS = 267,             /* TOKEN_MINUS  */
+    TOKEN_MUL = 268,               /* TOKEN_MUL  */
+    TOKEN_DIV = 269,               /* TOKEN_DIV  */
+    TOKEN_MODULUS = 270,           /* TOKEN_MODULUS  */
+    TOKEN_TENSOR_PRODUCT = 271,    /* TOKEN_TENSOR_PRODUCT  */
+    TOKEN_POWER = 272,             /* TOKEN_POWER  */
+    TOKEN_TENSOR_PRODUCT_N_TIMES = 273, /* TOKEN_TENSOR_PRODUCT_N_TIMES  */
+    TOKEN_SQRT = 274,              /* TOKEN_SQRT  */
+    TOKEN_LESS = 275,              /* TOKEN_LESS  */
+    TOKEN_GREATER = 276,           /* TOKEN_GREATER  */
+    TOKEN_LPAREN = 277,            /* TOKEN_LPAREN  */
+    TOKEN_RPAREN = 278,            /* TOKEN_RPAREN  */
+    TOKEN_LCRBR = 279,             /* TOKEN_LCRBR  */
+    TOKEN_RCRBR = 280,             /* TOKEN_RCRBR  */
+    TOKEN_LSQBR = 281,             /* TOKEN_LSQBR  */
+    TOKEN_RSQBR = 282,             /* TOKEN_RSQBR  */
+    TOKEN_COMMA = 283,             /* TOKEN_COMMA  */
+    TOKEN_COLON = 284,             /* TOKEN_COLON  */
+    TOKEN_SEMI = 285,              /* TOKEN_SEMI  */
+    TOKEN_ERROR = 286              /* TOKEN_ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -107,7 +109,7 @@ union YYSTYPE
     char *str;
     struct complex complex;
 
-#line 111 "q_assembly/parser/token.h"
+#line 113 "q_assembly/parser/token.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

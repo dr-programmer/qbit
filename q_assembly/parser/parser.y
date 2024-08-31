@@ -31,7 +31,7 @@ struct decl *parser_result;
 %type <decl> program decl_list decl
 %type <expr> expr algebra term difactor factor fields next_expr registers reg circuit c_step
 %type <expr> subsystem range concurrent_gate
-%type <str> name
+%type <str> name string
 %type <complex> number
 
 %token TOKEN_RANGE
@@ -42,8 +42,11 @@ struct decl *parser_result;
 
 %token TOKEN_AND
 
+%token TOKEN_LOAD
+
 %token TOKEN_COMPLEX_LITERAL
 %token TOKEN_IDENT
+%token TOKEN_STRING_LITERAL
 
 %token TOKEN_PLUS
 %token TOKEN_MINUS
@@ -87,10 +90,15 @@ decl    : name TOKEN_LPAREN fields TOKEN_RPAREN
                                 { $$ = decl_create($1, $3, 0, 0, line); }
         | TOKEN_LCRBR registers TOKEN_RCRBR circuit
                                 { $$ = decl_create(0, $2, $4, 0, line); }
+        | TOKEN_LOAD TOKEN_LPAREN string TOKEN_RPAREN
+                                { 
+                                        $$ = decl_create(0, 0, 0, 0, line);
+                                        $$->file_name = $3; 
+                                }
         ;
 
 name    : TOKEN_IDENT
-                {
+                { 
                         char *temp = (char *)smart_allocate(strlen(yytext), sizeof(char));
                         strcpy(temp, yytext);
                         $$ = temp; 
@@ -169,7 +177,7 @@ factor  : TOKEN_LPAREN name TOKEN_RPAREN
         ;
 
 number  : TOKEN_COMPLEX_LITERAL
-                {
+                { 
                         unsigned short imaginary = 0;
                         unsigned int len = strlen(yytext);
                         if(yytext[len-1] == 'i') {
@@ -227,7 +235,7 @@ c_step  : expr                  { $$ = expr_create(EXPR_APPLY_GATE, $1, 0, line)
                                 }
         | TOKEN_LESS            { $$ = expr_create(EXPR_MEASURE, 0, 0, line); }
         | TOKEN_LESS subsystem concurrent_gate
-                                {
+                                { 
                                         $$ = expr_create(
                                                 EXPR_AND, 
                                                 expr_create(EXPR_MEASURE, 0, $2, line), 
@@ -259,6 +267,13 @@ concurrent_gate
         : TOKEN_AND c_step      { $$ = $2; }
         |                       { $$ = 0; }
         ;
+
+string  : TOKEN_STRING_LITERAL  { 
+                                        char *temp = (char *)
+                                                smart_allocate(strlen(yytext), sizeof(char));
+                                        strcpy(temp, yytext);
+                                        $$ = temp; 
+                                }
 
 %%
 

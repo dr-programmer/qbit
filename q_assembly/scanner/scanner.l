@@ -33,8 +33,10 @@ LETTERS [a-zA-Z]
 >           {return TOKEN_GREATER;}
 \.{3}       {return TOKEN_RANGE;}
 \|          {return TOKEN_SEPARATOR;}
+load        {return TOKEN_LOAD;}
 {DIGITS}+(\.{DIGITS}+)?i?   {return TOKEN_COMPLEX_LITERAL;}
 ({LETTERS}|_)({LETTERS}|{DIGITS}|_)*  {return TOKEN_IDENT;}
+\".*\"      {return TOKEN_STRING_LITERAL;}
 \(          {return TOKEN_LPAREN;}
 \)          {return TOKEN_RPAREN;}
 \{          {return TOKEN_LCRBR;}

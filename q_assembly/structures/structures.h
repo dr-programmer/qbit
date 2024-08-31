@@ -49,6 +49,8 @@ struct decl {
     struct expr *circuit;
     struct decl *next;
 
+    char *file_name;
+
     struct dimensions dimensions;
 
     quantum_operator *operator;

@@ -55,6 +55,9 @@ void decl_print(const struct decl * const d, const unsigned short is_error) {
         expr_print(d->value, 1);
         printf("\n)\n");
     }
+    else if(d->file_name) {
+        printf("load (%s)\n", d->file_name);
+    }
     else {
         printf("{ \n");
         expr_print(d->value, 1);
@@ -123,7 +126,7 @@ void expr_print(const struct expr * const e, const int tabs) {
                             }
                             break;
         case EXPR_REGISTER: printf("{"); 
-                            expr_print(e->left, -1);
+                            expr_print(e->left, -2);
                             printf("}");
                             if(e->right) {
                                 printf("\n");
