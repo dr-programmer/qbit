@@ -50,6 +50,7 @@ struct decl {
     struct decl *next;
 
     char *file_name;
+    struct decl *loaded;
 
     struct dimensions dimensions;
 

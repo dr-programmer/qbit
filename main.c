@@ -25,8 +25,11 @@ struct scope *symbol_table = NULL;
 FILE *result_file = NULL;
 
 unsigned short show_pcode = 0;
+unsigned short show_lpcode = 0;
 unsigned short gen_qset = 0;
 unsigned short compile_time_calculations = 0;
+
+char *global_name_of_starting_file = NULL;
 
 int main(int argc, char **argv) {S
     //smart_allocation_setup();
@@ -120,6 +123,9 @@ int main(int argc, char **argv) {S
         if(!strcmp(argv[i], "--show-pcode")) {
             show_pcode = 1;
         }
+        else if(!strcmp(argv[i], "--show-lpcode")) {
+            show_lpcode = 1;
+        }
         else if(!strcmp(argv[i], "-gen-qset")) {
             gen_qset = 1;
             if(++i >= argc) {
@@ -138,13 +144,14 @@ int main(int argc, char **argv) {S
     }
     yyin = fopen(name_of_starting_file, "r");
     if(yyin == NULL) {
-        fprintf(stderr, "Error opening file %s \n", argv[1]);
+        fprintf(stderr, "Error opening file %s \n", name_of_starting_file);
         C
         exit(ERROR_OPENING_FILE);
     }
-    if(gen_qset) printf("Name of result file = "CYN"%s"RESET" \n", name_of_file);
+    global_name_of_starting_file = name_of_starting_file;
+    if(gen_qset) printf("Name of result file = "CYN"%s"RESET" \n\n", name_of_file);
     if(yyparse() == 0) {
-        printf("Parse "GRN"successful"RESET"! \n");
+        printf(BLU"%s"RESET": Parse "GRN"successful"RESET"! \n", name_of_starting_file);
         if(show_pcode) decl_print(parser_result, 0);
 
         scope_enter();
@@ -174,7 +181,7 @@ int main(int argc, char **argv) {S
                                         "#include <math.h>\n"
                                         "#include <time.h>\n"
                                         "#define SMART_DEALLOCATION\n"
-                                        "#include \"../../qbit.h\"\n");
+                                        "#include \"qbit.h\"\n");
                 fprintf(result_file, "\nint main() {S\nsrand(time(0));\n");
                 decl_codegen(parser_result);
                 fprintf(result_file, "E\nreturn 0;\n}\n");
@@ -195,12 +202,15 @@ int main(int argc, char **argv) {S
                 system(compile_command);
             E
             }
-            else decl_coderun(parser_result);
+            else {
+                putc('\n', stdout);
+                decl_coderun(parser_result);
+            }
         }
         printf("\nProgram compiled with %d error/s \n", error_count);
     }
     else {
-        printf("Parse "RED"failed"RESET". \n");
+        printf(BLU"%s"RESET": Parse "RED"failed"RESET". \n", name_of_starting_file);
     }
 
     fclose(yyin);

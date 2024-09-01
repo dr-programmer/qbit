@@ -81,7 +81,9 @@ void yyerror(char *s);
 
 struct decl *parser_result;
 
-#line 85 "q_assembly/parser/parser.y.c"
+extern char *global_name_of_starting_file;
+
+#line 87 "q_assembly/parser/parser.y.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -550,11 +552,11 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    81,    81,    85,    86,    89,    91,    93,   100,   108,
-     111,   113,   115,   118,   120,   122,   124,   126,   129,   131,
-     140,   143,   145,   155,   156,   157,   166,   175,   179,   195,
-     201,   205,   207,   209,   213,   214,   217,   221,   223,   226,
-     227,   236,   237,   249,   251,   255,   267,   268,   271
+       0,    83,    83,    87,    88,    91,    93,    95,   102,   110,
+     113,   115,   117,   120,   122,   124,   126,   128,   131,   133,
+     142,   145,   147,   157,   158,   159,   168,   177,   181,   197,
+     203,   207,   209,   211,   215,   216,   219,   223,   225,   228,
+     229,   238,   239,   251,   253,   257,   269,   270,   273
 };
 #endif
 
@@ -1173,116 +1175,116 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: decl_list  */
-#line 81 "q_assembly/parser/parser.y"
+#line 83 "q_assembly/parser/parser.y"
                                 { parser_result = (yyvsp[0].decl); }
-#line 1179 "q_assembly/parser/parser.y.c"
+#line 1181 "q_assembly/parser/parser.y.c"
     break;
 
   case 3: /* decl_list: decl decl_list  */
-#line 85 "q_assembly/parser/parser.y"
+#line 87 "q_assembly/parser/parser.y"
                                 { (yyval.decl) = (yyvsp[-1].decl); (yyvsp[-1].decl)->next = (yyvsp[0].decl); }
-#line 1185 "q_assembly/parser/parser.y.c"
+#line 1187 "q_assembly/parser/parser.y.c"
     break;
 
   case 4: /* decl_list: %empty  */
-#line 86 "q_assembly/parser/parser.y"
+#line 88 "q_assembly/parser/parser.y"
                                 { (yyval.decl) = 0; }
-#line 1191 "q_assembly/parser/parser.y.c"
+#line 1193 "q_assembly/parser/parser.y.c"
     break;
 
   case 5: /* decl: name TOKEN_LPAREN fields TOKEN_RPAREN  */
-#line 90 "q_assembly/parser/parser.y"
+#line 92 "q_assembly/parser/parser.y"
                                 { (yyval.decl) = decl_create((yyvsp[-3].str), (yyvsp[-1].expr), 0, 0, line); }
-#line 1197 "q_assembly/parser/parser.y.c"
+#line 1199 "q_assembly/parser/parser.y.c"
     break;
 
   case 6: /* decl: TOKEN_LCRBR registers TOKEN_RCRBR circuit  */
-#line 92 "q_assembly/parser/parser.y"
+#line 94 "q_assembly/parser/parser.y"
                                 { (yyval.decl) = decl_create(0, (yyvsp[-2].expr), (yyvsp[0].expr), 0, line); }
-#line 1203 "q_assembly/parser/parser.y.c"
+#line 1205 "q_assembly/parser/parser.y.c"
     break;
 
   case 7: /* decl: TOKEN_LOAD TOKEN_LPAREN string TOKEN_RPAREN  */
-#line 94 "q_assembly/parser/parser.y"
+#line 96 "q_assembly/parser/parser.y"
                                 { 
                                         (yyval.decl) = decl_create(0, 0, 0, 0, line);
                                         (yyval.decl)->file_name = (yyvsp[-1].str); 
                                 }
-#line 1212 "q_assembly/parser/parser.y.c"
+#line 1214 "q_assembly/parser/parser.y.c"
     break;
 
   case 8: /* name: TOKEN_IDENT  */
-#line 101 "q_assembly/parser/parser.y"
+#line 103 "q_assembly/parser/parser.y"
                 { 
                         char *temp = (char *)smart_allocate(strlen(yytext), sizeof(char));
                         strcpy(temp, yytext);
                         (yyval.str) = temp; 
                 }
-#line 1222 "q_assembly/parser/parser.y.c"
+#line 1224 "q_assembly/parser/parser.y.c"
     break;
 
   case 9: /* expr: algebra  */
-#line 108 "q_assembly/parser/parser.y"
+#line 110 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[0].expr); }
-#line 1228 "q_assembly/parser/parser.y.c"
+#line 1230 "q_assembly/parser/parser.y.c"
     break;
 
   case 10: /* algebra: algebra TOKEN_PLUS term  */
-#line 112 "q_assembly/parser/parser.y"
+#line 114 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_ADD, (yyvsp[-2].expr), (yyvsp[0].expr), line); }
-#line 1234 "q_assembly/parser/parser.y.c"
+#line 1236 "q_assembly/parser/parser.y.c"
     break;
 
   case 11: /* algebra: algebra TOKEN_MINUS term  */
-#line 114 "q_assembly/parser/parser.y"
+#line 116 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_SUB, (yyvsp[-2].expr), (yyvsp[0].expr), line); }
-#line 1240 "q_assembly/parser/parser.y.c"
+#line 1242 "q_assembly/parser/parser.y.c"
     break;
 
   case 12: /* algebra: term  */
-#line 115 "q_assembly/parser/parser.y"
+#line 117 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[0].expr); }
-#line 1246 "q_assembly/parser/parser.y.c"
+#line 1248 "q_assembly/parser/parser.y.c"
     break;
 
   case 13: /* term: term TOKEN_MUL difactor  */
-#line 119 "q_assembly/parser/parser.y"
+#line 121 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_MUL, (yyvsp[-2].expr), (yyvsp[0].expr), line); }
-#line 1252 "q_assembly/parser/parser.y.c"
+#line 1254 "q_assembly/parser/parser.y.c"
     break;
 
   case 14: /* term: term TOKEN_DIV difactor  */
-#line 121 "q_assembly/parser/parser.y"
+#line 123 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_DIV, (yyvsp[-2].expr), (yyvsp[0].expr), line); }
-#line 1258 "q_assembly/parser/parser.y.c"
+#line 1260 "q_assembly/parser/parser.y.c"
     break;
 
   case 15: /* term: term TOKEN_MODULUS difactor  */
-#line 123 "q_assembly/parser/parser.y"
+#line 125 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_MODULUS, (yyvsp[-2].expr), (yyvsp[0].expr), line); }
-#line 1264 "q_assembly/parser/parser.y.c"
+#line 1266 "q_assembly/parser/parser.y.c"
     break;
 
   case 16: /* term: term TOKEN_TENSOR_PRODUCT difactor  */
-#line 125 "q_assembly/parser/parser.y"
+#line 127 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_TENSOR_PRODUCT, (yyvsp[-2].expr), (yyvsp[0].expr), line); }
-#line 1270 "q_assembly/parser/parser.y.c"
+#line 1272 "q_assembly/parser/parser.y.c"
     break;
 
   case 17: /* term: difactor  */
-#line 126 "q_assembly/parser/parser.y"
+#line 128 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[0].expr); }
-#line 1276 "q_assembly/parser/parser.y.c"
+#line 1278 "q_assembly/parser/parser.y.c"
     break;
 
   case 18: /* difactor: difactor TOKEN_POWER factor  */
-#line 130 "q_assembly/parser/parser.y"
+#line 132 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_POWER, (yyvsp[-2].expr), (yyvsp[0].expr), line); }
-#line 1282 "q_assembly/parser/parser.y.c"
+#line 1284 "q_assembly/parser/parser.y.c"
     break;
 
   case 19: /* difactor: difactor TOKEN_TENSOR_PRODUCT_N_TIMES factor  */
-#line 132 "q_assembly/parser/parser.y"
+#line 134 "q_assembly/parser/parser.y"
                                 { 
                                         (yyval.expr) = expr_create(
                                                 EXPR_TENSOR_PRODUCT_N_TIMES, 
@@ -1291,23 +1293,23 @@ yyreduce:
                                                 line
                                         ); 
                                 }
-#line 1295 "q_assembly/parser/parser.y.c"
+#line 1297 "q_assembly/parser/parser.y.c"
     break;
 
   case 20: /* difactor: factor  */
-#line 140 "q_assembly/parser/parser.y"
+#line 142 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[0].expr); }
-#line 1301 "q_assembly/parser/parser.y.c"
+#line 1303 "q_assembly/parser/parser.y.c"
     break;
 
   case 21: /* factor: TOKEN_LPAREN name TOKEN_RPAREN  */
-#line 144 "q_assembly/parser/parser.y"
+#line 146 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create_name((yyvsp[-1].str), line); }
-#line 1307 "q_assembly/parser/parser.y.c"
+#line 1309 "q_assembly/parser/parser.y.c"
     break;
 
   case 22: /* factor: TOKEN_MINUS factor  */
-#line 145 "q_assembly/parser/parser.y"
+#line 147 "q_assembly/parser/parser.y"
                                 { 
                                         (yyval.expr) = expr_create(EXPR_MUL, 
                                                 expr_create_complex_literal(
@@ -1318,23 +1320,23 @@ yyreduce:
                                                 line
                                         ); 
                                 }
-#line 1322 "q_assembly/parser/parser.y.c"
+#line 1324 "q_assembly/parser/parser.y.c"
     break;
 
   case 23: /* factor: TOKEN_SQRT factor  */
-#line 155 "q_assembly/parser/parser.y"
+#line 157 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_SQRT, 0, (yyvsp[0].expr), line); }
-#line 1328 "q_assembly/parser/parser.y.c"
+#line 1330 "q_assembly/parser/parser.y.c"
     break;
 
   case 24: /* factor: number  */
-#line 156 "q_assembly/parser/parser.y"
+#line 158 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create_complex_literal((yyvsp[0].complex), line); }
-#line 1334 "q_assembly/parser/parser.y.c"
+#line 1336 "q_assembly/parser/parser.y.c"
     break;
 
   case 25: /* factor: TOKEN_SEPARATOR number TOKEN_GREATER  */
-#line 158 "q_assembly/parser/parser.y"
+#line 160 "q_assembly/parser/parser.y"
                                 { 
                                         (yyval.expr) = expr_create(
                                                 EXPR_KET, 
@@ -1343,11 +1345,11 @@ yyreduce:
                                                 line
                                         ); 
                                 }
-#line 1347 "q_assembly/parser/parser.y.c"
+#line 1349 "q_assembly/parser/parser.y.c"
     break;
 
   case 26: /* factor: TOKEN_LESS number TOKEN_SEPARATOR  */
-#line 167 "q_assembly/parser/parser.y"
+#line 169 "q_assembly/parser/parser.y"
                                 { 
                                         (yyval.expr) = expr_create(
                                                 EXPR_BRA, 
@@ -1356,17 +1358,17 @@ yyreduce:
                                                 line
                                         ); 
                                 }
-#line 1360 "q_assembly/parser/parser.y.c"
+#line 1362 "q_assembly/parser/parser.y.c"
     break;
 
   case 27: /* factor: TOKEN_LPAREN expr TOKEN_RPAREN  */
-#line 176 "q_assembly/parser/parser.y"
+#line 178 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[-1].expr); }
-#line 1366 "q_assembly/parser/parser.y.c"
+#line 1368 "q_assembly/parser/parser.y.c"
     break;
 
   case 28: /* number: TOKEN_COMPLEX_LITERAL  */
-#line 180 "q_assembly/parser/parser.y"
+#line 182 "q_assembly/parser/parser.y"
                 { 
                         unsigned short imaginary = 0;
                         unsigned int len = strlen(yytext);
@@ -1381,82 +1383,82 @@ yyreduce:
                                                 ;
                         (yyval.complex) = result; 
                 }
-#line 1385 "q_assembly/parser/parser.y.c"
+#line 1387 "q_assembly/parser/parser.y.c"
     break;
 
   case 29: /* fields: expr next_expr  */
-#line 195 "q_assembly/parser/parser.y"
+#line 197 "q_assembly/parser/parser.y"
                                 { 
                                         if((yyvsp[0].expr) == NULL) 
                                                 (yyval.expr) = (yyvsp[-1].expr);
                                         else 
                                                 (yyval.expr) = expr_create(EXPR_FIELD, (yyvsp[-1].expr), (yyvsp[0].expr), line); 
                                 }
-#line 1396 "q_assembly/parser/parser.y.c"
+#line 1398 "q_assembly/parser/parser.y.c"
     break;
 
   case 30: /* fields: %empty  */
-#line 201 "q_assembly/parser/parser.y"
+#line 203 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = 0; }
-#line 1402 "q_assembly/parser/parser.y.c"
+#line 1404 "q_assembly/parser/parser.y.c"
     break;
 
   case 31: /* next_expr: TOKEN_COMMA fields  */
-#line 206 "q_assembly/parser/parser.y"
+#line 208 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[0].expr); }
-#line 1408 "q_assembly/parser/parser.y.c"
+#line 1410 "q_assembly/parser/parser.y.c"
     break;
 
   case 32: /* next_expr: TOKEN_SEPARATOR fields  */
-#line 208 "q_assembly/parser/parser.y"
+#line 210 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[0].expr); }
-#line 1414 "q_assembly/parser/parser.y.c"
+#line 1416 "q_assembly/parser/parser.y.c"
     break;
 
   case 33: /* next_expr: %empty  */
-#line 209 "q_assembly/parser/parser.y"
+#line 211 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = 0; }
-#line 1420 "q_assembly/parser/parser.y.c"
+#line 1422 "q_assembly/parser/parser.y.c"
     break;
 
   case 34: /* registers: reg registers  */
-#line 213 "q_assembly/parser/parser.y"
+#line 215 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_REGISTER, (yyvsp[-1].expr), (yyvsp[0].expr), line); }
-#line 1426 "q_assembly/parser/parser.y.c"
+#line 1428 "q_assembly/parser/parser.y.c"
     break;
 
   case 35: /* registers: %empty  */
-#line 214 "q_assembly/parser/parser.y"
+#line 216 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = 0; }
-#line 1432 "q_assembly/parser/parser.y.c"
+#line 1434 "q_assembly/parser/parser.y.c"
     break;
 
   case 36: /* reg: TOKEN_LCRBR fields TOKEN_RCRBR  */
-#line 218 "q_assembly/parser/parser.y"
+#line 220 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[-1].expr); }
-#line 1438 "q_assembly/parser/parser.y.c"
+#line 1440 "q_assembly/parser/parser.y.c"
     break;
 
   case 37: /* circuit: TOKEN_NEXT c_step circuit  */
-#line 222 "q_assembly/parser/parser.y"
+#line 224 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_CIRCUIT_STEP, (yyvsp[-1].expr), (yyvsp[0].expr), line); }
-#line 1444 "q_assembly/parser/parser.y.c"
+#line 1446 "q_assembly/parser/parser.y.c"
     break;
 
   case 38: /* circuit: %empty  */
-#line 223 "q_assembly/parser/parser.y"
+#line 225 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = 0; }
-#line 1450 "q_assembly/parser/parser.y.c"
+#line 1452 "q_assembly/parser/parser.y.c"
     break;
 
   case 39: /* c_step: expr  */
-#line 226 "q_assembly/parser/parser.y"
+#line 228 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_APPLY_GATE, (yyvsp[0].expr), 0, line); }
-#line 1456 "q_assembly/parser/parser.y.c"
+#line 1458 "q_assembly/parser/parser.y.c"
     break;
 
   case 40: /* c_step: expr subsystem concurrent_gate  */
-#line 228 "q_assembly/parser/parser.y"
+#line 230 "q_assembly/parser/parser.y"
                                 { 
                                         (yyval.expr) = expr_create(
                                                 EXPR_AND, 
@@ -1465,17 +1467,17 @@ yyreduce:
                                                 line
                                         ); 
                                 }
-#line 1469 "q_assembly/parser/parser.y.c"
+#line 1471 "q_assembly/parser/parser.y.c"
     break;
 
   case 41: /* c_step: TOKEN_LESS  */
-#line 236 "q_assembly/parser/parser.y"
+#line 238 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create(EXPR_MEASURE, 0, 0, line); }
-#line 1475 "q_assembly/parser/parser.y.c"
+#line 1477 "q_assembly/parser/parser.y.c"
     break;
 
   case 42: /* c_step: TOKEN_LESS subsystem concurrent_gate  */
-#line 238 "q_assembly/parser/parser.y"
+#line 240 "q_assembly/parser/parser.y"
                                 { 
                                         (yyval.expr) = expr_create(
                                                 EXPR_AND, 
@@ -1484,23 +1486,23 @@ yyreduce:
                                                 line
                                         ); 
                                 }
-#line 1488 "q_assembly/parser/parser.y.c"
+#line 1490 "q_assembly/parser/parser.y.c"
     break;
 
   case 43: /* subsystem: TOKEN_LSQBR number TOKEN_RSQBR  */
-#line 250 "q_assembly/parser/parser.y"
+#line 252 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = expr_create_complex_literal((yyvsp[-1].complex), line); }
-#line 1494 "q_assembly/parser/parser.y.c"
+#line 1496 "q_assembly/parser/parser.y.c"
     break;
 
   case 44: /* subsystem: TOKEN_LSQBR range TOKEN_RSQBR  */
-#line 252 "q_assembly/parser/parser.y"
+#line 254 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[-1].expr); }
-#line 1500 "q_assembly/parser/parser.y.c"
+#line 1502 "q_assembly/parser/parser.y.c"
     break;
 
   case 45: /* range: number TOKEN_RANGE number  */
-#line 256 "q_assembly/parser/parser.y"
+#line 258 "q_assembly/parser/parser.y"
                                 { 
                                         (yyval.expr) = expr_create(
                                                 EXPR_RANGE, 
@@ -1509,34 +1511,35 @@ yyreduce:
                                                 line
                                         ); 
                                 }
-#line 1513 "q_assembly/parser/parser.y.c"
+#line 1515 "q_assembly/parser/parser.y.c"
     break;
 
   case 46: /* concurrent_gate: TOKEN_AND c_step  */
-#line 267 "q_assembly/parser/parser.y"
+#line 269 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[0].expr); }
-#line 1519 "q_assembly/parser/parser.y.c"
+#line 1521 "q_assembly/parser/parser.y.c"
     break;
 
   case 47: /* concurrent_gate: %empty  */
-#line 268 "q_assembly/parser/parser.y"
+#line 270 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = 0; }
-#line 1525 "q_assembly/parser/parser.y.c"
+#line 1527 "q_assembly/parser/parser.y.c"
     break;
 
   case 48: /* string: TOKEN_STRING_LITERAL  */
-#line 271 "q_assembly/parser/parser.y"
+#line 273 "q_assembly/parser/parser.y"
                                 { 
                                         char *temp = (char *)
                                                 smart_allocate(strlen(yytext), sizeof(char));
-                                        strcpy(temp, yytext);
+                                        strcpy(temp, yytext+1);
+                                        temp[strlen(temp)-1] = '\0';
                                         (yyval.str) = temp; 
                                 }
-#line 1536 "q_assembly/parser/parser.y.c"
+#line 1539 "q_assembly/parser/parser.y.c"
     break;
 
 
-#line 1540 "q_assembly/parser/parser.y.c"
+#line 1543 "q_assembly/parser/parser.y.c"
 
       default: break;
     }
@@ -1729,11 +1732,12 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 278 "q_assembly/parser/parser.y"
+#line 281 "q_assembly/parser/parser.y"
 
 
 void yyerror(char *s) {
     error_count++;
+    fprintf(stderr, BLU "%s" RESET ": ", global_name_of_starting_file);
     fprintf(stderr, RED "Error" RESET \
         MAG" |%s|"RESET"->"YEL"|%s|"RESET" on line %d \n", s, yytext, line);
 }

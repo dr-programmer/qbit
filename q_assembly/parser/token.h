@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 15 "q_assembly/parser/parser.y"
+#line 17 "q_assembly/parser/parser.y"
 
 
 #include "colors.h"
@@ -102,7 +102,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 24 "q_assembly/parser/parser.y"
+#line 26 "q_assembly/parser/parser.y"
 
     struct decl *decl;
     struct expr *expr;

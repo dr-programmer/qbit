@@ -10,6 +10,8 @@ extern int line;
 void yyerror(char *s);
 
 struct decl *parser_result;
+
+extern char *global_name_of_starting_file;
 %}
 
 %code requires {
@@ -271,7 +273,8 @@ concurrent_gate
 string  : TOKEN_STRING_LITERAL  { 
                                         char *temp = (char *)
                                                 smart_allocate(strlen(yytext), sizeof(char));
-                                        strcpy(temp, yytext);
+                                        strcpy(temp, yytext+1);
+                                        temp[strlen(temp)-1] = '\0';
                                         $$ = temp; 
                                 }
 
@@ -279,6 +282,7 @@ string  : TOKEN_STRING_LITERAL  {
 
 void yyerror(char *s) {
     error_count++;
+    fprintf(stderr, BLU "%s" RESET ": ", global_name_of_starting_file);
     fprintf(stderr, RED "Error" RESET \
         MAG" |%s|"RESET"->"YEL"|%s|"RESET" on line %d \n", s, yytext, line);
 }
