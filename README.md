@@ -149,7 +149,7 @@ graph TD;
   E[Codegenerator];
 ```
 > [!TIP]
-> If the `compile_time_calculations` flag is enabled, the **Codegenerator** can run the **Coderunner** for some parts of the program. Read more about about [The Q-bit CLI](#the-q-bit-cli)
+> If the `compile_time_calculations` flag is enabled, the **Codegenerator** can run the **Coderunner** for some parts of the program. Read more about about [The Q-bit CLI](#the-q-bit-cli).
 
   #### **Usage**
    - the **Q Assembly** language file extension is `.qsm`
@@ -331,7 +331,19 @@ The following **must** be **installed** in order to **build** the **Q-bit projec
     make build-lib
     ```
 
- 6. Add the following lines at the end of your `~/.bashrc` file:
+ 6. Make the `qbit.h` header file accessible from everywhere:
+
+    ```console
+    sudo ln -s $(pwd)/qbit.h /usr/local/include
+    ```
+
+ 7. Get the `[path-to-qbit]`:
+
+    ```console
+    pwd
+    ```
+
+ 8. Add the following lines at the end of your `~/.bashrc` file:
 
     ```bash
     export PATH=$PATH:[path-to-qbit]/qbit/build
@@ -351,6 +363,7 @@ qbit [--flags] filename.qsm [--flags]
   - `-gen-qset [executable filename]` - Tells the **Q Assembly** compiler to generate a **Q-SET** instructions file from the previously provided **Q Assembly** file and then converts it to an executable. Read more about [The Codegenerator](#structure-1).
   - `--fast-run` - An additional specifier to the `-gen-qset [executable filename]` flag which enables the internal `compile_time_calculations` flag that tells the **Q Assembly** compiler to run the **Coderunner** on the definitions of all the **quantum gates** and **quantum registers**, and run the **Codegenerator** only on the **quantum circuit** itself.
   - `--show-pcode` - Tells the **Q Assembly** compiler to **structure** and **print** the parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
+  - `--show-lpcode` - Tells the **Q Assembly** compiler to **structure** and **print** the **loaded** parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
 
 > [!TIP]
 > **Q-bit** uses a convention which implies that **flags** starting with `-` **require** an additional **specifier** after them, and **flags** with `--` **do not**.

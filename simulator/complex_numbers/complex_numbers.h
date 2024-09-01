@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 
+// Uncomment to enable the logs:
+// #define COMPLEX_SHOW_POW_CALCULATIONS
+
 struct complex {
     float real;
     float imaginary;
@@ -23,5 +26,7 @@ struct complex complex_add(struct complex num1, struct complex num2);
 struct complex complex_sub(struct complex num1, struct complex num2);
 struct complex complex_mul(struct complex num1, struct complex num2);
 struct complex complex_div(struct complex num1, struct complex num2);
+
+struct complex complex_pow(struct complex num, struct complex pow);
 
 #endif

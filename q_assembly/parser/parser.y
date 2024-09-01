@@ -10,6 +10,8 @@ extern int line;
 void yyerror(char *s);
 
 struct decl *parser_result;
+
+extern char *global_name_of_starting_file;
 %}
 
 %code requires {
@@ -29,9 +31,9 @@ struct decl *parser_result;
 };
 
 %type <decl> program decl_list decl
-%type <expr> expr algebra term factor fields next_expr registers reg circuit c_step
+%type <expr> expr algebra term difactor factor fields next_expr registers reg circuit c_step
 %type <expr> subsystem range concurrent_gate
-%type <str> name
+%type <str> name string
 %type <complex> number
 
 %token TOKEN_RANGE
@@ -42,8 +44,11 @@ struct decl *parser_result;
 
 %token TOKEN_AND
 
+%token TOKEN_LOAD
+
 %token TOKEN_COMPLEX_LITERAL
 %token TOKEN_IDENT
+%token TOKEN_STRING_LITERAL
 
 %token TOKEN_PLUS
 %token TOKEN_MINUS
@@ -51,8 +56,11 @@ struct decl *parser_result;
 %token TOKEN_DIV
 %token TOKEN_MODULUS
 
-%token TOKEN_SQRT
 %token TOKEN_TENSOR_PRODUCT
+%token TOKEN_POWER
+%token TOKEN_TENSOR_PRODUCT_N_TIMES
+
+%token TOKEN_SQRT
 
 %token TOKEN_LESS
 %token TOKEN_GREATER
@@ -84,10 +92,15 @@ decl    : name TOKEN_LPAREN fields TOKEN_RPAREN
                                 { $$ = decl_create($1, $3, 0, 0, line); }
         | TOKEN_LCRBR registers TOKEN_RCRBR circuit
                                 { $$ = decl_create(0, $2, $4, 0, line); }
+        | TOKEN_LOAD TOKEN_LPAREN string TOKEN_RPAREN
+                                { 
+                                        $$ = decl_create(0, 0, 0, 0, line);
+                                        $$->file_name = $3; 
+                                }
         ;
 
 name    : TOKEN_IDENT
-                {
+                { 
                         char *temp = (char *)smart_allocate(strlen(yytext), sizeof(char));
                         strcpy(temp, yytext);
                         $$ = temp; 
@@ -104,12 +117,28 @@ algebra : algebra TOKEN_PLUS term
         | term                  { $$ = $1; }
         ;
 
-term    : term TOKEN_MUL factor { $$ = expr_create(EXPR_MUL, $1, $3, line); }
-        | term TOKEN_DIV factor { $$ = expr_create(EXPR_DIV, $1, $3, line); }
-        | term TOKEN_MODULUS factor
+term    : term TOKEN_MUL difactor
+                                { $$ = expr_create(EXPR_MUL, $1, $3, line); }
+        | term TOKEN_DIV difactor
+                                { $$ = expr_create(EXPR_DIV, $1, $3, line); }
+        | term TOKEN_MODULUS difactor
                                 { $$ = expr_create(EXPR_MODULUS, $1, $3, line); }
-        | term TOKEN_TENSOR_PRODUCT factor
+        | term TOKEN_TENSOR_PRODUCT difactor
                                 { $$ = expr_create(EXPR_TENSOR_PRODUCT, $1, $3, line); }
+        | difactor              { $$ = $1; }
+        ;
+
+difactor: difactor TOKEN_POWER factor
+                                { $$ = expr_create(EXPR_POWER, $1, $3, line); }
+        | difactor TOKEN_TENSOR_PRODUCT_N_TIMES factor
+                                { 
+                                        $$ = expr_create(
+                                                EXPR_TENSOR_PRODUCT_N_TIMES, 
+                                                $1, 
+                                                $3, 
+                                                line
+                                        ); 
+                                }
         | factor                { $$ = $1; }
         ;
 
@@ -150,7 +179,7 @@ factor  : TOKEN_LPAREN name TOKEN_RPAREN
         ;
 
 number  : TOKEN_COMPLEX_LITERAL
-                {
+                { 
                         unsigned short imaginary = 0;
                         unsigned int len = strlen(yytext);
                         if(yytext[len-1] == 'i') {
@@ -208,7 +237,7 @@ c_step  : expr                  { $$ = expr_create(EXPR_APPLY_GATE, $1, 0, line)
                                 }
         | TOKEN_LESS            { $$ = expr_create(EXPR_MEASURE, 0, 0, line); }
         | TOKEN_LESS subsystem concurrent_gate
-                                {
+                                { 
                                         $$ = expr_create(
                                                 EXPR_AND, 
                                                 expr_create(EXPR_MEASURE, 0, $2, line), 
@@ -241,10 +270,19 @@ concurrent_gate
         |                       { $$ = 0; }
         ;
 
+string  : TOKEN_STRING_LITERAL  { 
+                                        char *temp = (char *)
+                                                smart_allocate(strlen(yytext), sizeof(char));
+                                        strcpy(temp, yytext+1);
+                                        temp[strlen(temp)-1] = '\0';
+                                        $$ = temp; 
+                                }
+
 %%
 
 void yyerror(char *s) {
     error_count++;
+    fprintf(stderr, BLU "%s" RESET ": ", global_name_of_starting_file);
     fprintf(stderr, RED "Error" RESET \
         MAG" |%s|"RESET"->"YEL"|%s|"RESET" on line %d \n", s, yytext, line);
 }

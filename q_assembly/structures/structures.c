@@ -55,6 +55,9 @@ void decl_print(const struct decl * const d, const unsigned short is_error) {
         expr_print(d->value, 1);
         printf("\n)\n");
     }
+    else if(d->file_name) {
+        printf("load (\"%s\")\n", d->file_name);
+    }
     else {
         printf("{ \n");
         expr_print(d->value, 1);
@@ -101,6 +104,10 @@ void expr_print(const struct expr * const e, const int tabs) {
                                         expr_print(e->right, 0); printf(")"); break;
         case EXPR_TENSOR_PRODUCT: printf("("); expr_print(e->left, 0); printf(" @ "); 
                                         expr_print(e->right, 0); printf(")"); break;
+        case EXPR_POWER: printf("("); expr_print(e->left, 0); printf("^"); 
+                                        expr_print(e->right, 0); printf(")"); break;
+        case EXPR_TENSOR_PRODUCT_N_TIMES: printf("("); expr_print(e->left, 0); printf("^@"); 
+                                        expr_print(e->right, 0); printf(")"); break;
         case EXPR_AND: expr_print(e->left, 0); 
                             if(e->right) {
                                 printf(" && ");
@@ -119,7 +126,7 @@ void expr_print(const struct expr * const e, const int tabs) {
                             }
                             break;
         case EXPR_REGISTER: printf("{"); 
-                            expr_print(e->left, -1);
+                            expr_print(e->left, -2);
                             printf("}");
                             if(e->right) {
                                 printf("\n");
@@ -198,15 +205,52 @@ void printf_error(char *str, ...) {
 
 #include "scope.h"
 #include "colors.h"
+#include "error.h"
+
+extern FILE *yyin;
+extern int yyparse();
+extern struct decl *parser_result;
+extern int line;
+extern char *global_name_of_starting_file;
+
+extern unsigned short show_lpcode;
 
 void decl_resolve(struct decl * const d) {
     if(!d) return;
 
     if(d->name) {
         if(scope_lookup_current(d->name)) 
-            printf_error(RED"Error "MAG"|%s|"RESET"->"YEL"\n|%D|"RESET" on line %d \n", 
+            printf_error(BLU"%s"RESET": "
+                            RED"Error "MAG"|%s|"RESET"->"YEL"\n|%D|"RESET" on line %d \n", 
+                            global_name_of_starting_file, 
                             "variable already exists", d, d->line);
         else scope_bind(d);
+    }
+    else if(d->file_name) {
+        struct decl *original_parser_result = parser_result;
+        line = 0;
+        char *original_global_name_of_starting_file = global_name_of_starting_file;
+
+        yyin = fopen(d->file_name, "r");
+        global_name_of_starting_file = d->file_name;
+
+        if(yyin == NULL) {
+            fprintf(stderr, "Error opening file %s \n", d->file_name);
+            C
+            exit(ERROR_OPENING_FILE);
+        }
+        if(yyparse() == 0) {
+            printf(BLU"%s"RESET": Parse "GRN"successful"RESET"! \n", d->file_name);
+            d->loaded = parser_result;
+
+            if(show_lpcode) decl_print(d->loaded, 0);
+
+            decl_resolve(d->loaded);
+        }
+        else printf(BLU"%s"RESET": Parse "RED"failed"RESET". \n", d->file_name);
+
+        parser_result = original_parser_result;
+        global_name_of_starting_file = original_global_name_of_starting_file;
     }
     expr_resolve(d->value);
     expr_resolve(d->circuit);
@@ -219,7 +263,9 @@ void expr_resolve(struct expr * const e) {
     if(e->kind == EXPR_NAME) {
         e->declaration = scope_lookup(e->name);
         if(e->declaration == NULL) {
-            printf_error(RED"Error "MAG"|%s|"RESET"\n\t->"YEL"|%E|"RESET" on line %d \n", 
+            printf_error(BLU"%s"RESET": "
+                            RED"Error "MAG"|%s|"RESET"\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                            global_name_of_starting_file, 
                             "no declaration found", e, e->line);
         }
     }
@@ -246,6 +292,12 @@ void decl_typecheck(struct decl * const d) {
     if(d->name) {
         if(dimensions.rows == 0) d->dimensions = get_gate_dimensions(dimensions);
         else d->dimensions = dimensions;
+    }
+    else if(d->file_name) {
+        char *original_global_name_of_starting_file = global_name_of_starting_file;
+        global_name_of_starting_file = d->file_name;
+        decl_typecheck(d->loaded);
+        global_name_of_starting_file = original_global_name_of_starting_file;
     }
 
     decl_typecheck(d->next);
@@ -278,9 +330,10 @@ struct dimensions expr_typecheck(struct expr * const e) {
                 qubit_value = e->left->complex_literal.real;
 
             if(qubit_value != -1) 
-                printf_error(RED"Error "MAG 
+                printf_error(BLU"%s"RESET": "RED"Error "MAG 
                     "|cannot create a 2D quantum state from the value "BLU"(%d)"MAG"|"RESET 
                     "\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                    global_name_of_starting_file, 
                     qubit_value, e, e->line);
             
             if(e->kind == EXPR_KET) result = dimensions_create(2, 1);
@@ -291,17 +344,19 @@ struct dimensions expr_typecheck(struct expr * const e) {
         case EXPR_MODULUS: 
             if(e->left && (left.rows != 1 || left.columns != 1 
                 || right.rows != 1 || right.columns != 1)) 
-                printf_error(RED"Error "MAG 
+                printf_error(BLU"%s"RESET": "RED"Error "MAG 
                     "|cannot apply binary real operator "BLU"(%%)"
                     MAG" between operands of dimension"BLU 
                     " [%dx%d]"MAG" and "BLU"[%dx%d]"MAG"|"RESET 
                     "\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                    global_name_of_starting_file, 
                     left.rows, left.columns, right.rows, right.columns, e, e->line);
             else if(right.rows != 1 || right.columns != 1) 
-                printf_error(RED"Error "MAG 
+                printf_error(BLU"%s"RESET": "RED"Error "MAG 
                     "|cannot apply unitary complex operator "BLU"(#)"
                     MAG" on operand of dimension"BLU 
                     " [%dx%d]"MAG"|"RESET"\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                    global_name_of_starting_file, 
                     right.rows, right.columns, e, e->line);
             
             result = dimensions_create(1, 1);
@@ -328,15 +383,16 @@ struct dimensions expr_typecheck(struct expr * const e) {
                             || (right.rows != 1 || right.columns != 1)) 
                         : 1;
             int tensor_check = e->kind == EXPR_TENSOR_PRODUCT 
-                        ? ((left.rows <= 1 || left.columns <= 1) 
-                            || (right.rows <= 1 || right.columns <= 1)) 
+                        ? ((left.rows <= 1 && left.columns <= 1) 
+                            || (right.rows <= 1 && right.columns <= 1)) 
                         : 1;
             if(add_sub_check && mul_check && div_check && tensor_check) 
-                printf_error(RED"Error "MAG 
+                printf_error(BLU"%s"RESET": "RED"Error "MAG 
                     "|cannot apply binary operator "BLU"(%c)"MAG
                     " between operands of dimension"BLU 
                     " [%dx%d]"MAG" and "BLU"[%dx%d]"MAG"|"RESET 
                     "\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                    global_name_of_starting_file, 
                     operator, left.rows, left.columns, right.rows, right.columns, e, e->line);
             
             if(e->kind == EXPR_TENSOR_PRODUCT) {
@@ -344,11 +400,43 @@ struct dimensions expr_typecheck(struct expr * const e) {
                 result.columns = left.columns * right.columns;
             }
             else {
-                result.rows = left.rows;
-                result.columns = right.columns;
+                if(left.rows == 1 && left.columns == 1) result = right;
+                else if(right.rows == 1 && right.columns == 1) result = left;
+                else {
+                    result.rows = left.rows;
+                    result.columns = right.columns;
+                }
             }
             break;
         }
+        case EXPR_POWER:
+            if(left.rows != 1 || left.columns != 1 || right.rows != 1 || right.columns != 1) 
+                printf_error(BLU"%s"RESET": "RED"Error "MAG 
+                    "|cannot apply binary complex operator "BLU"(%c)"MAG
+                    " between operands of dimension"BLU 
+                    " [%dx%d]"MAG" and "BLU"[%dx%d]"MAG"|"RESET 
+                    "\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                    global_name_of_starting_file, 
+                    '^', left.rows, left.columns, right.rows, right.columns, e, e->line);
+            result = left;
+            break;
+        case EXPR_TENSOR_PRODUCT_N_TIMES:
+            if(right.rows != 1 || right.columns != 1 
+                || e->right->complex_literal.imaginary != 0) {
+                printf_error(BLU"%s"RESET": "RED"Error "MAG 
+                    "|cannot apply binary operator "BLU"(%s)"MAG
+                    " on an operand of dimension"BLU 
+                    " [%dx%d]"MAG" with a given "BLU"non-real power"MAG"|"RESET 
+                    "\n\t->"YEL"|%E|"RESET" on line %d \n", 
+                    global_name_of_starting_file, 
+                    "^@", left.rows, left.columns, e, e->line);
+                result = left;
+            }
+            else {
+                result.rows = pow(left.rows, (int)e->right->complex_literal.real);
+                result.columns = pow(left.columns, (int)e->right->complex_literal.real);
+            }
+            break;
         case EXPR_RANGE: 
             e->reg = reg_create(
                 e->left->complex_literal.real, 
@@ -394,14 +482,17 @@ static quantum_operator *get_quantum_operator(const struct matrix * const m,
 void decl_coderun(struct decl * const d) {
     if(!d) return;
 
-    if(d->name == NULL) {
-        quantum_state *registers = expr_coderun(d->value, NULL);
-        expr_coderun(d->circuit, registers);
-    }
-    else {
+    if(d->name) {
         struct matrix *temp = expr_coderun(d->value, NULL);
         if(d->value->kind == EXPR_FIELD) temp = get_quantum_operator(temp, d->dimensions);
         d->operator = temp;
+    }
+    else if(d->file_name) {
+        decl_coderun(d->loaded);
+    }
+    else {
+        quantum_state *registers = expr_coderun(d->value, NULL);
+        expr_coderun(d->circuit, registers);
     }
 
     decl_coderun(d->next);
@@ -482,6 +573,19 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             break;
         case EXPR_TENSOR_PRODUCT: S
             result = matrix_tensor_product(left, right);
+            P(result)
+            E
+            break;
+        case EXPR_POWER: S
+            result = matrix_mul_scalar(
+                complex_pow(left->fields[0][0], right->fields[0][0]), 
+                matrix_create(1, 1)
+            );
+            P(result)
+            E
+            break;
+        case EXPR_TENSOR_PRODUCT_N_TIMES: S
+            result = matrix_tensor_product_n_times(left, (int)right->fields[0][0].real);
             P(result)
             E
             break;
@@ -588,28 +692,7 @@ static char *var_create() {
 void decl_codegen(struct decl * const d) {
     if(!d) return;
 
-    if(d->name == NULL) {
-        if(compile_time_calculations) {
-            quantum_state *registers = expr_coderun(d->value, NULL);
-            d->value->name = var_create();
-            fprintf(result_file, "quantum_state *%s = matrix_create_empty(%d, 1);\n", 
-                                            d->value->name, 
-                                            registers->rows);
-            for(unsigned int i = 0; i < registers->rows; i++) {
-                for(unsigned int j = 0; j < registers->columns; j++) {
-                    fprintf(result_file, "%s->fields[%u][%u] = complex_create(%f, %f);\n", 
-                                            d->value->name, 
-                                            i, 
-                                            j, 
-                                            registers->fields[i][j].real, 
-                                            registers->fields[i][j].imaginary);
-                }
-            }
-        }
-        else expr_codegen(d->value, NULL);
-        expr_codegen(d->circuit, d->value);
-    }
-    else {
+    if(d->name) {
         if(!compile_time_calculations) expr_codegen(d->value, NULL);
         if(compile_time_calculations) {
             struct matrix *temp = expr_coderun(d->value, NULL);
@@ -648,6 +731,30 @@ void decl_codegen(struct decl * const d) {
         else fprintf(result_file, "quantum_gate *%s = %s;\n", 
                                             d->name, 
                                             d->value->name);
+    }
+    else if(d->file_name) {
+        decl_codegen(d->loaded);
+    }
+    else {
+        if(compile_time_calculations) {
+            quantum_state *registers = expr_coderun(d->value, NULL);
+            d->value->name = var_create();
+            fprintf(result_file, "quantum_state *%s = matrix_create_empty(%d, 1);\n", 
+                                            d->value->name, 
+                                            registers->rows);
+            for(unsigned int i = 0; i < registers->rows; i++) {
+                for(unsigned int j = 0; j < registers->columns; j++) {
+                    fprintf(result_file, "%s->fields[%u][%u] = complex_create(%f, %f);\n", 
+                                            d->value->name, 
+                                            i, 
+                                            j, 
+                                            registers->fields[i][j].real, 
+                                            registers->fields[i][j].imaginary);
+                }
+            }
+        }
+        else expr_codegen(d->value, NULL);
+        expr_codegen(d->circuit, d->value);
     }
 
     decl_codegen(d->next);
@@ -729,6 +836,29 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                                         e->right->name);
             break;
         }
+        case EXPR_POWER: 
+            expr_codegen(e->left, regs);
+            expr_codegen(e->right, regs);
+            e->name = var_create();
+            fprintf(result_file, "struct matrix *%s = matrix_create_empty(1, 1);\n", 
+                                        e->name);
+            fprintf(result_file, "%s->fields[0][0]"
+                                 " = complex_pow(%s->fields[0][0], %s->fields[0][0]);\n", 
+                                        e->name, 
+                                        e->left->name, 
+                                        e->right->name);
+            break;
+        case EXPR_TENSOR_PRODUCT_N_TIMES: 
+            expr_codegen(e->left, regs);
+            expr_codegen(e->right, regs);
+            e->name = var_create();
+            fprintf(result_file, "struct matrix *%s"
+                                 " = matrix_tensor_product_n_times"
+                                        "(%s, %s->fields[0][0].real);\n", 
+                                        e->name, 
+                                        e->left->name, 
+                                        e->right->name);
+            break;
         case EXPR_FIELD: 
             expr_codegen(e->left, regs);
             e->name = e->left->name;

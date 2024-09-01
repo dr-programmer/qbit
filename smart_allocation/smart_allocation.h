@@ -3,6 +3,15 @@
 
 #include <stdlib.h>
 
+// Uncomment to enable the logs:
+// #define SMART_ALLOCATION_SHOW_PTR_CREATION
+// #define SMART_ALLOCATION_SHOW_SEARCH
+// #define SMART_ALLOCATION_SHOW_PROMOTION
+// #define SMART_ALLOCATION_SHOW_BINDING
+// #define SMART_ALLOCATION_SHOW_END_FREE
+// #define SMART_ALLOCATION_SHOW_ALLOCATION
+// #define SMART_ALLOCATION_SHOW_SMART_FREE
+
 #ifdef SMART_DEALLOCATION
 
 void smart_allocation_stack_push();

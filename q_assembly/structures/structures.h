@@ -26,6 +26,9 @@ typedef enum {
     EXPR_MODULUS, 
     EXPR_TENSOR_PRODUCT, 
 
+    EXPR_POWER, 
+    EXPR_TENSOR_PRODUCT_N_TIMES, 
+
     EXPR_SQRT, 
 
     EXPR_KET, 
@@ -45,6 +48,9 @@ struct decl {
     struct expr *value;
     struct expr *circuit;
     struct decl *next;
+
+    char *file_name;
+    struct decl *loaded;
 
     struct dimensions dimensions;
 

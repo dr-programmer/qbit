@@ -70,3 +70,53 @@ struct complex complex_div(struct complex num1, struct complex num2)
         new_numerator.imaginary / real_denominator
     );
 }
+
+struct complex complex_pow(struct complex num, struct complex pow) {
+    // a + ib = pow
+
+    // r = magnitude
+    const float magnitude = complex_get_absolute(num);
+    if(magnitude == 0) return complex_create(0, 0);
+    #ifdef COMPLEX_SHOW_POW_CALCULATIONS
+    printf("\nMagnitude: %f", magnitude);
+    #endif
+
+    // θ = angle
+    float angle = atan2(num.imaginary / magnitude, num.real / magnitude);
+    #ifdef COMPLEX_SHOW_POW_CALCULATIONS
+    printf("\nAngle (rad): %f", angle);
+    #endif
+
+    // The full formula:
+    // e^(a*ln(r)+ib*ln(r)+iθa-θb) = 
+    // e^(a*ln(r)-θb)*e^(i*(θa+b*ln(r))) = 
+    // e^(a*ln(r)-θb)*(cos(θa+b*ln(r)) + i*sin(θa+b*ln(r)))
+
+    // The first factor (real):
+    // e^(a*ln(r)-θb)
+    struct complex real_factor = {0, 0};
+    real_factor.real = exp(pow.real * log(magnitude) - angle * pow.imaginary);
+    #ifdef COMPLEX_SHOW_POW_CALCULATIONS
+    printf("\nReal factor: %f", real_factor.real);
+    #endif
+
+    // The second factor (complex):
+    // e^(i*(θa+b*ln(r)))
+    // which extends to:
+    // cos(θa+b*ln(r)) + i*sin(θa+b*ln(r))
+    struct complex complex_factor = {0, 0};
+    float temp_power = angle * pow.real + pow.imaginary * log(magnitude);
+    #ifdef COMPLEX_SHOW_POW_CALCULATIONS
+    printf("\nTemp power: %f", temp_power);
+    #endif
+    complex_factor.real = cos(temp_power);
+    complex_factor.imaginary = sin(temp_power);
+    #ifdef COMPLEX_SHOW_POW_CALCULATIONS
+    printf("\nComplex factor: (");
+    complex_print(complex_factor);
+    printf(")");
+    #endif
+
+    struct complex result = complex_mul(real_factor, complex_factor);
+    return result;
+}
