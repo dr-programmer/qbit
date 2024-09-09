@@ -167,7 +167,7 @@ static long smart_allocation_get_ptr_index(const void * const ptr) {
 }
 
 int smart_allocation_promote_ptr(const void * const ptr) {
-    if(!ptr || !allocated->next || smart_allocation_global_turn_off) return 0;
+    if(!ptr || !allocated || !allocated->next || smart_allocation_global_turn_off) return 0;
 
     #ifdef SMART_ALLOCATION_SHOW_PROMOTION
     printf("Promoting %p\n", ptr);
