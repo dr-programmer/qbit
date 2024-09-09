@@ -6,6 +6,8 @@
 #define SMART_ALLOCATION_PTR_DEFAULT_NUM_CHILDREN 8
 #define SMART_ALLOCATION_ARR_DEFAULT_CAPACITY 64
 
+unsigned short smart_allocation_global_turn_off = 0;
+
 struct ptr {
     void *ptr;
     int size;
@@ -57,6 +59,8 @@ static struct used_indices *ui_create() {
 }
 
 void smart_allocation_stack_push() {
+    if(smart_allocation_global_turn_off) return;
+
     struct smart_allocation_stack *tempS = allocated;
     allocated = sas_create();
     allocated->next = tempS;
@@ -163,7 +167,7 @@ static long smart_allocation_get_ptr_index(const void * const ptr) {
 }
 
 int smart_allocation_promote_ptr(const void * const ptr) {
-    if(!ptr || !allocated->next) return 0;
+    if(!ptr || !allocated->next || smart_allocation_global_turn_off) return 0;
 
     #ifdef SMART_ALLOCATION_SHOW_PROMOTION
     printf("Promoting %p\n", ptr);
@@ -232,7 +236,7 @@ static int smart_allocation_bind_child_to_par(const long par_index, const long c
     return 1;
 }
 int smart_allocation_bind_ptr(const void * const par, const void * const child) {
-    if(!par || !child) return 0;
+    if(!par || !child || smart_allocation_global_turn_off) return 0;
 
     #ifdef SMART_ALLOCATION_SHOW_BINDING
     printf("Binding %p to %p\n", child, par);
@@ -276,6 +280,8 @@ static void smart_allocation_free_current_ptrs() {
 }
 
 void smart_allocation_stack_pop() {
+    if(smart_allocation_global_turn_off) return;
+
     smart_allocation_free_current_ptrs();
 
     free(allocated->hash);
@@ -317,6 +323,7 @@ void *smart_allocate(const unsigned int num, const size_t size) {
     #endif
 
     void *ptr = calloc(num, size);
+    if(smart_allocation_global_turn_off) return ptr;
     smart_allocation_arr_add_ptr(ptr);
 
     #ifdef SMART_ALLOCATION_SHOW_ALLOCATION
@@ -348,6 +355,11 @@ static int smart_allocation_free_ptr_children(struct ptr *ptr) {
 }
 int smart_free(const void * const ptr) {
     if(!ptr) return 0;
+
+    if(smart_allocation_global_turn_off) {
+        free((void *)ptr);
+        return 1;
+    }
 
     int success = 0;
 
