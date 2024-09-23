@@ -12,6 +12,8 @@
 // #define SMART_ALLOCATION_SHOW_ALLOCATION
 // #define SMART_ALLOCATION_SHOW_SMART_FREE
 
+extern unsigned short smart_allocation_global_turn_off;
+
 #ifdef SMART_DEALLOCATION
 
 void smart_allocation_stack_push();
