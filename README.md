@@ -346,8 +346,8 @@ The following **must** be **installed** in order to **build** the **Q-bit projec
  8. Add the following lines at the end of your `~/.bashrc` file:
 
     ```bash
-    export PATH=$PATH:[path-to-qbit]/qbit/build
-    export LIBRARY_PATH=$LIBRARY_PATH:[path-to-qbit]/qbit/build
+    export PATH=$PATH:[path-to-qbit]/build
+    export LIBRARY_PATH=$LIBRARY_PATH:[path-to-qbit]/build
     ```
 
 ## The Q-bit CLI
