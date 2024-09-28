@@ -473,7 +473,7 @@ static quantum_operator *get_quantum_operator(const struct matrix * const m,
     quantum_operator *result = matrix_create_empty(d.rows, d.columns);
     for(unsigned int i = 0; i < d.rows; i++) {
         for(unsigned int j = 0; j < d.columns; j++) {
-            result->fields[i][j] = m->fields[0][j + i * d.columns];
+            INDEX(result, i, j) = INDEX(m, 0, j + i * d.columns);
         }
     }
 
@@ -521,26 +521,26 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             E
             break;
         case EXPR_KET: S
-            result = quantum_state_create(right->fields[0][0].real, e->dimensions.rows);
+            result = quantum_state_create(INDEX(right, 0, 0).real, e->dimensions.rows);
             P(result)
             E
             break;
         case EXPR_BRA: {S
             quantum_state *temp = 
-                quantum_state_create(left->fields[0][0].real, e->dimensions.columns);
+                quantum_state_create(INDEX(left, 0, 0).real, e->dimensions.columns);
             result = vector_get_dual(temp);
             P(result)
             E
             break;
         }
         case EXPR_SQRT: 
-            right->fields[0][0].real = sqrt(right->fields[0][0].real);
+            INDEX(right, 0, 0).real = sqrt(INDEX(right, 0, 0).real);
             result = right;
             break;
         case EXPR_MODULUS: S
             result = matrix_mul_scalar(
                 complex_create(
-                    (int)left->fields[0][0].real % (int)right->fields[0][0].real, 
+                    (int)INDEX(left, 0, 0).real % (int)INDEX(right, 0, 0).real, 
                     0
                 ), 
                 matrix_create(1, 1)
@@ -565,7 +565,7 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             break;
         case EXPR_DIV: S
             result = matrix_mul_scalar(
-                complex_div(left->fields[0][0], right->fields[0][0]), 
+                complex_div(INDEX(left, 0, 0), INDEX(right, 0, 0)), 
                 matrix_create(1, 1)
             );
             P(result)
@@ -578,14 +578,14 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             break;
         case EXPR_POWER: S
             result = matrix_mul_scalar(
-                complex_pow(left->fields[0][0], right->fields[0][0]), 
+                complex_pow(INDEX(left, 0, 0), INDEX(right, 0, 0)), 
                 matrix_create(1, 1)
             );
             P(result)
             E
             break;
         case EXPR_TENSOR_PRODUCT_N_TIMES: S
-            result = matrix_tensor_product_n_times(left, (int)right->fields[0][0].real);
+            result = matrix_tensor_product_n_times(left, (int)INDEX(right, 0, 0).real);
             P(result)
             E
             break;
@@ -596,9 +596,9 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             else {
                 result = matrix_create(1, right->columns+1);
                 for(unsigned int i = 1; i < result->columns; i++) {
-                    result->fields[0][i] = right->fields[0][i-1];
+                    INDEX(result, 0, i) = INDEX(right, 0, i-1);
                 }
-                result->fields[0][0] = left->fields[0][0];
+                INDEX(result, 0, 0) = INDEX(left, 0, 0);
             }
             break;
         case EXPR_REGISTER: 
@@ -703,12 +703,12 @@ void decl_codegen(struct decl * const d) {
                                             d->dimensions.rows);
             for(unsigned int i = 0; i < d->dimensions.rows; i++) {
                 for(unsigned int j = 0; j < d->dimensions.columns; j++) {
-                    fprintf(result_file, "%s->fields[%u][%u] = complex_create(%f, %f);\n", 
+                    fprintf(result_file, "INDEX(%s, %u, %u) = complex_create(%f, %f);\n", 
                                             d->name, 
                                             i, 
                                             j, 
-                                            d->operator->fields[i][j].real, 
-                                            d->operator->fields[i][j].imaginary);
+                                            INDEX(d->operator, i, j).real, 
+                                            INDEX(d->operator, i, j).imaginary);
                 }
             }
         }
@@ -719,7 +719,7 @@ void decl_codegen(struct decl * const d) {
             struct expr *fields = d->value;
             for(unsigned int i = 0; i < d->dimensions.rows; i++) {
                 for(unsigned int j = 0; j < d->dimensions.columns; j++) {
-                    fprintf(result_file, "%s->fields[%u][%u] = %s->fields[0][0];\n", 
+                    fprintf(result_file, "INDEX(%s, %u, %u) = INDEX(%s, 0, 0);\n", 
                                             d->name, 
                                             i, 
                                             j, 
@@ -744,12 +744,12 @@ void decl_codegen(struct decl * const d) {
                                             registers->rows);
             for(unsigned int i = 0; i < registers->rows; i++) {
                 for(unsigned int j = 0; j < registers->columns; j++) {
-                    fprintf(result_file, "%s->fields[%u][%u] = complex_create(%f, %f);\n", 
+                    fprintf(result_file, "INDEX(%s, %u, %u) = complex_create(%f, %f);\n", 
                                             d->value->name, 
                                             i, 
                                             j, 
-                                            registers->fields[i][j].real, 
-                                            registers->fields[i][j].imaginary);
+                                            INDEX(registers, i, j).real, 
+                                            INDEX(registers, i, j).imaginary);
                 }
             }
         }
@@ -768,7 +768,7 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
             e->name = var_create();
             fprintf(result_file, "struct matrix *%s = matrix_create_empty(1, 1);\n", 
                                         e->name);
-            fprintf(result_file, "%s->fields[0][0] = complex_create(%f, %f);\n", 
+            fprintf(result_file, "INDEX(%s, 0, 0) = complex_create(%f, %f);\n", 
                                         e->name, 
                                         e->complex_literal.real, 
                                         e->complex_literal.imaginary);
@@ -797,7 +797,7 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
         case EXPR_SQRT: 
             expr_codegen(e->right, regs);
             e->name = e->right->name;
-            fprintf(result_file, "%s->fields[0][0].real = sqrt(%s->fields[0][0].real);\n", 
+            fprintf(result_file, "INDEX(%s, 0, 0).real = sqrt(INDEX(%s, 0, 0).real);\n", 
                                         e->name, 
                                         e->name);
             break;
@@ -811,9 +811,9 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
             else operator = "/";
             fprintf(result_file, "struct matrix *%s = matrix_create_empty(1, 1);\n", 
                                         e->name);
-            fprintf(result_file, "%s->fields[0][0].real = %s->fields[0][0].real"
+            fprintf(result_file, "INDEX(%s, 0, 0).real = INDEX(%s, 0, 0).real"
                                     " %s "
-                                    "%s->fields[0][0].real;\n", 
+                                    "INDEX(%s, 0, 0).real;\n", 
                                         e->name, 
                                         e->left->name, 
                                         operator, 
@@ -842,8 +842,8 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
             e->name = var_create();
             fprintf(result_file, "struct matrix *%s = matrix_create_empty(1, 1);\n", 
                                         e->name);
-            fprintf(result_file, "%s->fields[0][0]"
-                                 " = complex_pow(%s->fields[0][0], %s->fields[0][0]);\n", 
+            fprintf(result_file, "INDEX(%s, 0, 0)"
+                                 " = complex_pow(INDEX(%s, 0, 0), INDEX(%s, 0, 0));\n", 
                                         e->name, 
                                         e->left->name, 
                                         e->right->name);
@@ -854,7 +854,7 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
             e->name = var_create();
             fprintf(result_file, "struct matrix *%s"
                                  " = matrix_tensor_product_n_times"
-                                        "(%s, %s->fields[0][0].real);\n", 
+                                        "(%s, INDEX(%s, 0, 0).real);\n", 
                                         e->name, 
                                         e->left->name, 
                                         e->right->name);
@@ -874,7 +874,7 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                                         result_name, 
                                         temp->dimensions.columns);
                 for(unsigned int i = 0; i < reg_dimensions; i++) {
-                    fprintf(result_file, "%s->fields[%u][0] = %s->fields[0][0];\n", 
+                    fprintf(result_file, "INDEX(%s, %u, 0) = INDEX(%s, 0, 0);\n", 
                                         result_name, 
                                         i, 
                                         temp->name);
@@ -958,15 +958,15 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                 fprintf(result_file, 
                     "quantum_gate *%s = NULL;\n"
                     "for(unsigned int i = 0; i < %s->rows;) {\n"
-                    "\tif(i < %s->fields[0][0].real * 2 || i > %s->fields[0][0].real * 2) {\n"
+                    "\tif(i < INDEX(%s, 0, 0).real * 2 || i > INDEX(%s, 0, 0).real * 2) {\n"
                     "\t\tif(!%s) %s = quantum_gate_create(2);\n"
                     "\t\telse %s = matrix_tensor_product(%s, quantum_gate_create(2));\n"
                     "\t\ti+=2;\n"
                     "\t}\n"
-                    "\telse if(i <= %s->fields[0][0].real * 2) {\n"
+                    "\telse if(i <= INDEX(%s, 0, 0).real * 2) {\n"
                     "\t\tif(!%s) %s = %s;\n"
                     "\t\telse %s = matrix_tensor_product(%s, %s);\n"
-                    "\t\ti += (%s->fields[0][0].real + 1) * 2;\n"
+                    "\t\ti += (INDEX(%s, 0, 0).real + 1) * 2;\n"
                     "\t}\n"
                     "}\n",              e->name, 
                                         regs->name, 
