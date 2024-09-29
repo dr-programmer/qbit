@@ -150,6 +150,16 @@ quantum_state *t62 = t61->state;
 printf(CYN"Quantum state of the system after measurement: \n"GRN);
 matrix_print(t62);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t61->value);
+qubit *t63 = quantum_state_create(0, 2);
+struct matrix *t64 = matrix_mul(H, t63);
+quantum_gate *minus = t64;
+struct matrix *t65 = matrix_mul(H, minus);
+quantum_state *t66 = matrix_tensor_product(minus, t65);
+qm_result *t67 = quantum_state_measure(t66);
+quantum_state *t68 = t67->state;
+printf(CYN"Quantum state of the system after measurement: \n"GRN);
+matrix_print(t68);
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t67->value);
 E
 return 0;
 }

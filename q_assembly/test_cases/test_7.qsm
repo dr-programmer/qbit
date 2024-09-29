@@ -17,3 +17,16 @@ load ("./include/gates.qsm")
     -> (CNOT)
     -> (H)[0]
     -> <
+
+?? ------------------------------------------------------
+
+?? Defining the hadamrd minus (|->) quantum state
+minus (
+    (H)*|0>
+)
+
+{
+    {(minus)}
+    {(H)*(minus)}
+}
+    -> <
