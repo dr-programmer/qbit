@@ -3,10 +3,13 @@
 
 #include "../complex_numbers/complex_numbers.h"
 
+#define INDEX_GET(MATRIX, ROW, COLUMN) (((ROW) * MATRIX->columns) + (COLUMN))
+#define INDEX(MATRIX, ROW, COLUMN) MATRIX->fields[INDEX_GET(MATRIX, ROW, COLUMN)]
+
 struct matrix {
     unsigned int rows;
     unsigned int columns;
-    struct complex **fields;
+    struct complex *fields;
 };
 
 typedef struct matrix vector;

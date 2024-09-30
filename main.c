@@ -39,8 +39,8 @@ int main(int argc, char **argv) {S
     if(argc == 1) {
     S
         vector *v1 = vector_create();
-        v1->fields[0][0] = complex_create(1, 0);
-        v1->fields[1][0] = complex_create(2, 0);
+        INDEX(v1, 0, 0) = complex_create(1, 0);
+        INDEX(v1, 1, 0) = complex_create(2, 0);
         matrix_print(v1);
         dual_vector *dv1 = vector_get_dual(v1);
         matrix_print(dv1);

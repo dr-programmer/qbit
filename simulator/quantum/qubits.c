@@ -9,13 +9,13 @@ quantum_state *quantum_state_create(const unsigned int basis, const unsigned int
     if(basis >= size) return NULL;
 
     quantum_state *temp = matrix_create_empty(size, 1);
-    temp->fields[basis][0] = complex_create(1, 0);
+    INDEX(temp, basis, 0) = complex_create(1, 0);
     return temp;
 }
 
 qubit *qubit_create() {
     qubit *temp = vector_create();
-    temp->fields[0][0] = complex_create(1, 0);
+    INDEX(temp, 0, 0) = complex_create(1, 0);
     return temp;
 }
 qubit *qubit_create_init(const struct complex a0, const struct complex a1) {
@@ -38,7 +38,7 @@ qm_result *quantum_state_measure(const quantum_state * const q) {
     float current_state_probabilty = 0;
     qm_result *result = NULL;
     for(unsigned int i = 0; i < q->rows; i++) {
-        current_state_probabilty += pow(complex_get_absolute(q->fields[i][0]), 2);
+        current_state_probabilty += pow(complex_get_absolute(INDEX(q, i, 0)), 2);
         if(random_value < current_state_probabilty) {
             quantum_state *state = quantum_state_create(i, q->rows);
             result = qm_result_create(state, i);

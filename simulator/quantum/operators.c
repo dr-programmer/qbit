@@ -17,8 +17,8 @@ quantum_gate *quantum_gate_create_pauli_x() {
         1 0
     */
     quantum_gate *temp = matrix_create_empty(2, 2);
-    temp->fields[0][1] = complex_create(1, 0);
-    temp->fields[1][0] = complex_create(1, 0);
+    INDEX(temp, 0, 1) = complex_create(1, 0);
+    INDEX(temp, 1, 0) = complex_create(1, 0);
     return temp;
 }
 quantum_gate *quantum_gate_create_pauli_y() {
@@ -27,8 +27,8 @@ quantum_gate *quantum_gate_create_pauli_y() {
         i  0
     */
     quantum_gate *temp = matrix_create_empty(2, 2);
-    temp->fields[0][1] = complex_create(0, -1);
-    temp->fields[1][0] = complex_create(0, 1);
+    INDEX(temp, 0, 1) = complex_create(0, -1);
+    INDEX(temp, 1, 0) = complex_create(0, 1);
     return temp;
 }
 quantum_gate *quantum_gate_create_pauli_z() {
@@ -37,7 +37,7 @@ quantum_gate *quantum_gate_create_pauli_z() {
         0 -1
     */
     quantum_gate *temp = quantum_gate_create(2);
-    temp->fields[1][1] = complex_create(-1, 0);
+    INDEX(temp, 1, 1) = complex_create(-1, 0);
     return temp;
 }
 
@@ -89,7 +89,7 @@ quantum_gate *quantum_gate_create_pi_eighths() {
         0 e^(i*pi/4)
     */
     quantum_gate *temp = quantum_gate_create(2);
-    temp->fields[1][1] = complex_create(cos(C_PI / 4), sin(C_PI / 4));
+    INDEX(temp, 1, 1) = complex_create(cos(C_PI / 4), sin(C_PI / 4));
     return temp;
 }
 
@@ -100,10 +100,10 @@ quantum_gate *quantum_gate_create_controlled_1_qubit_gate(const quantum_gate * c
 
     // The following is the operator |0><0|
     quantum_operator *basis_0 = matrix_create_empty(2, 2);
-    basis_0->fields[0][0] = complex_create(1, 0);
+    INDEX(basis_0, 0, 0) = complex_create(1, 0);
     // The following is the operator |1><1|
     quantum_operator *basis_1 = matrix_create_empty(2, 2);
-    basis_1->fields[1][1] = complex_create(1, 0);
+    INDEX(basis_1, 1, 1) = complex_create(1, 0);
 
     // The following is the expression |0><0|⊗I + |1><1|⊗U
     quantum_gate *result = matrix_add(

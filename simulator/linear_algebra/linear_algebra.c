@@ -6,12 +6,10 @@ struct matrix *matrix_create(const unsigned int rows, const unsigned int columns
     struct matrix *temp = (struct matrix *)smart_allocate(1, sizeof(struct matrix));
     temp->rows = rows;
     temp->columns = columns;
-    temp->fields = (struct complex **)smart_allocate(rows, sizeof(struct complex *));
+    temp->fields = (struct complex *)smart_allocate(rows*columns, sizeof(struct complex));
     B(temp, temp->fields)
     for(unsigned int i = 0; i < rows; i++) {
-        temp->fields[i] = (struct complex *)smart_allocate(columns, sizeof(struct complex));
-        B(temp, temp->fields[i])
-        temp->fields[i][i % columns] = complex_create(1, 0);
+        INDEX(temp, i, i % columns) = complex_create(1, 0);
     }
     return temp;
 }
@@ -19,12 +17,8 @@ struct matrix *matrix_create_empty(const unsigned int rows, const unsigned int c
     struct matrix *temp = (struct matrix *)smart_allocate(1, sizeof(struct matrix));
     temp->rows = rows;
     temp->columns = columns;
-    temp->fields = (struct complex **)smart_allocate(rows, sizeof(struct complex *));
+    temp->fields = (struct complex *)smart_allocate(rows*columns, sizeof(struct complex));
     B(temp, temp->fields)
-    for(unsigned int i = 0; i < rows; i++) {
-        temp->fields[i] = (struct complex *)smart_allocate(columns, sizeof(struct complex));
-        B(temp, temp->fields[i])
-    }
     return temp;
 }
 
@@ -33,7 +27,7 @@ void matrix_print(const struct matrix * const m) {
 
     for(unsigned int i = 0; i < m->rows; i++) {
         for(unsigned int j = 0; j < m->columns; j++) {
-            complex_print(m->fields[i][j]);
+            complex_print(INDEX(m, i, j));
             printf(" ");
         }
         printf("\n");
@@ -47,7 +41,7 @@ struct matrix *matrix_add(const struct matrix * const m1, const struct matrix * 
     struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
         for(unsigned int j = 0; j < m1->columns; j++) {
-            result->fields[i][j] = complex_add(m1->fields[i][j], m2->fields[i][j]);
+            INDEX(result, i, j) = complex_add(INDEX(m1, i, j), INDEX(m2, i, j));
         }
     }
     return result;
@@ -59,7 +53,7 @@ struct matrix *matrix_sub(const struct matrix * const m1, const struct matrix * 
     struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
         for(unsigned int j = 0; j < m1->columns; j++) {
-            result->fields[i][j] = complex_sub(m1->fields[i][j], m2->fields[i][j]);
+            INDEX(result, i, j) = complex_sub(INDEX(m1, i, j), INDEX(m2, i, j));
         }
     }
     return result;
@@ -71,7 +65,7 @@ static struct complex matrix_get_field_mul_value(const struct matrix * const m1,
 {
     struct complex result = {0, 0};
     for(unsigned int count = 0; count < m1->columns; count++) {
-        struct complex temp = complex_mul(m1->fields[i][count], m2->fields[count][j]);
+        struct complex temp = complex_mul(INDEX(m1, i, count), INDEX(m2, count, j));
         result = complex_add(result, temp);
     }
     return result;
@@ -80,10 +74,10 @@ struct matrix *matrix_mul(const struct matrix * const m1, const struct matrix * 
     if(!m1 || !m2) return NULL;
 
     if(m1->rows == 1 && m1->columns == 1) {
-        return matrix_mul_scalar(m1->fields[0][0], m2);
+        return matrix_mul_scalar(INDEX(m1, 0, 0), m2);
     }
     if(m2->rows == 1 && m2->columns == 1) {
-        return matrix_mul_scalar(m2->fields[0][0], m1);
+        return matrix_mul_scalar(INDEX(m2, 0, 0), m1);
     }
 
     if(m1->columns != m2->rows) return NULL;
@@ -91,7 +85,7 @@ struct matrix *matrix_mul(const struct matrix * const m1, const struct matrix * 
     struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
         for(unsigned int j = 0; j < m2->columns; j++) {
-            result->fields[i][j] = matrix_get_field_mul_value(m1, m2, i, j);
+            INDEX(result, i, j) = matrix_get_field_mul_value(m1, m2, i, j);
         }
     }
     return result;
@@ -102,7 +96,7 @@ struct matrix *matrix_mul_scalar(const struct complex s, const struct matrix * c
     struct matrix *result = matrix_create_empty(m->rows, m->columns);
     for(unsigned int i = 0; i < m->rows; i++) {
         for(unsigned int j = 0; j < m->columns; j++) {
-            result->fields[i][j] = complex_mul(s, m->fields[i][j]);
+            INDEX(result, i, j) = complex_mul(s, INDEX(m, i, j));
         }
     }
     return result;
@@ -117,9 +111,9 @@ struct matrix *matrix_tensor_product(const struct matrix * const m1,
                                                     m1->columns * m2->columns);
     for(unsigned int i = 0; i < result->rows; i++) {
         for(unsigned int j = 0; j < result->columns; j++) {
-            result->fields[i][j] = complex_mul(
-                m1->fields[i / m2->rows][j / m2->columns], 
-                m2->fields[i % m2->rows][j % m2->columns]
+            INDEX(result, i, j) = complex_mul(
+                INDEX(m1, i / m2->rows, j / m2->columns),
+                INDEX(m2, i % m2->rows, j % m2->columns)
             );
         }
     }
@@ -145,7 +139,7 @@ struct matrix *matrix_transpose(const struct matrix * const m) {
     struct matrix *result = matrix_create_empty(m->columns, m->rows);
     for(unsigned int i = 0; i < m->columns; i++) {
         for(unsigned int j = 0; j < m->rows; j++) {
-            result->fields[i][j] = m->fields[j][i];
+            INDEX(result, i, j) = INDEX(m, j, i);
         }
     }
     return result;
@@ -157,9 +151,9 @@ struct matrix *matrix_get_adjoint(const struct matrix * const m) {
     struct matrix *result = matrix_create_empty(m->columns, m->rows);
     for(unsigned int i = 0; i < m->columns; i++) {
         for(unsigned int j = 0; j < m->rows; j++) {
-            struct complex num = m->fields[j][i];
+            struct complex num =INDEX(m, j, i);
             num = complex_get_conjugate(num);
-            result->fields[i][j] = num;
+            INDEX(result, i, j) = num;
         }
     }
     return result;
@@ -171,7 +165,7 @@ struct complex matrix_get_trace(const struct matrix * const m) {
 
     struct complex result = complex_create(0, 0);
     for(unsigned int i = 0; i < m->rows; i++) {
-        result = complex_add(m->fields[i][i], result);
+        result = complex_add(INDEX(m, i, i), result);
     }
 
     return result;
@@ -187,10 +181,10 @@ struct matrix *matrix_get_partial_trace(const struct matrix * const m,
     struct matrix *result = matrix_create_empty(space_size, space_size);
     for(unsigned int i = 0; i < space_size; i++) {
         for(unsigned int j = 0; j < space_size; j++) {
-            result->fields[i][j] = complex_add(
-                m->fields[i * (space_index + 1)][j * (space_index + 1)], 
-                m->fields[i * (space_index + 1) + (spaces - space_index)]
-                            [j * (space_index + 1) + (spaces - space_index)]
+            INDEX(result, i, j) = complex_add(
+                INDEX(m, i * (space_index + 1), j * (space_index + 1)), 
+                INDEX(m, i * (space_index + 1) + (spaces - space_index), 
+                         j * (space_index + 1) + (spaces - space_index))
             );
         }
     }
@@ -204,8 +198,8 @@ vector *vector_create() {
 }
 vector *vector_create_init(struct complex num1, struct complex num2) {
     vector *temp = vector_create();
-    temp->fields[0][0] = num1;
-    temp->fields[1][0] = num2;
+    INDEX(temp, 0, 0) = num1;
+    INDEX(temp, 1, 0) = num2;
     return temp;
 }
 
@@ -222,6 +216,6 @@ struct complex vector_inner_product(const vector * const v1, const vector * cons
 
     dual_vector *dual_v1 = vector_get_dual(v1);
     struct matrix *temp = matrix_mul(dual_v1, v2);
-    struct complex result = temp->fields[0][0];
+    struct complex result = INDEX(temp, 0, 0);
     return result;
 }
