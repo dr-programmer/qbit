@@ -21,6 +21,11 @@ load ("./include/gates.qsm")
 ?? ------------------------------------------------------
 
 ?? Defining the hadamrd minus (|->) quantum state
+<?
+    The Q Assembly type system automatically understands 
+    that this is not a quantum gate 
+    but a quantum state.
+?>
 minus (
     (H)*|0>
 )
