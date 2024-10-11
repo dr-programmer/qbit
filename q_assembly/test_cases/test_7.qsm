@@ -35,3 +35,18 @@ minus (
     {(H)*(minus)}
 }
     -> <
+
+?? ------------------------------------------------------
+
+<?
+    Uncomment the following to run a 30-qubit system.
+    This is the setup of the registers for Shor's algorithm.
+    It is very memory demanding (~10GB).
+?>
+<?
+{
+    {|1>^@(2 * 10)}
+    {|0>^@10}
+}
+    -> <
+?>
