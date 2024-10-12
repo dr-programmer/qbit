@@ -5,7 +5,7 @@
 # The Q-bit project
 ## About
 ### What is Q-bit?
-  **Q-bit** is a quantum simulator project containg the following parts:
+  **Q-bit** is a quantum simulator project containing the following parts:
    - a **quantum computer simulator** and its **Q-SET** instruction set
    - a first of its kind **quantum circuit-like assembly language**, called **Q Assembly**
    - an **automated scope-based dynamic memory management system** written in C, named **SMART**
