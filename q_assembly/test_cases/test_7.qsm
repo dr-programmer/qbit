@@ -21,6 +21,11 @@ load ("./include/gates.qsm")
 ?? ------------------------------------------------------
 
 ?? Defining the hadamrd minus (|->) quantum state
+<?
+    The Q Assembly type system automatically understands 
+    that this is not a quantum gate 
+    but a quantum state.
+?>
 minus (
     (H)*|0>
 )
@@ -29,4 +34,29 @@ minus (
     {(minus)}
     {(H)*(minus)}
 }
+    -> <
+
+?? ------------------------------------------------------
+
+<?
+    Uncomment the following to run a 30-qubit system.
+    This is the setup of the registers for Shor's algorithm.
+    It is very memory demanding (~10GB).
+?>
+<?
+{
+    {|1>^@(2 * 10)}
+    {|0>^@10}
+}
+    -> <
+?>
+
+{
+    {|0>^@2}
+    {|1>^@2}
+    {(H)*|1>}
+}
+    -> (H)^@3[0 ... 2] && (H)^@2[3 ... 4]
+    -> <[4] && <[0 ... 2]
+    -> <[4]
     -> <

@@ -25,8 +25,9 @@ LETTERS [a-zA-Z]
 \#          {return TOKEN_SQRT;}
 \&\&        {return TOKEN_AND;}
 \<\?        {BEGIN(multiline_comment);}
-<multiline_comment>[^\?]*
-<multiline_comment>\?+[^\?\>]*
+<multiline_comment>"\n"     {line++;}
+<multiline_comment>[^\?"\n"]*
+<multiline_comment>\?+[^\?\>"\n"]*
 <multiline_comment>\?\>     {BEGIN(INITIAL);}
 \?\?.*"\n"  {line++;}
 "<"         {return TOKEN_LESS;}

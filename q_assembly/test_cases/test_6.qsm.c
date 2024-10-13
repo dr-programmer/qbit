@@ -110,42 +110,50 @@ INDEX(t51, 0, 0) = complex_create(0.000000, 0.000000);
 struct matrix *t52 = matrix_create_empty(1, 1);
 INDEX(t52, 0, 0) = complex_create(1.000000, 0.000000);
 quantum_gate *t53 = NULL;
-for(unsigned int i = 0; i < t49->rows;) {
-	if(i < INDEX(t51, 0, 0).real * 2 || i > INDEX(t52, 0, 0).real * 2) {
-		if(!t53) t53 = quantum_gate_create(2);
-		else t53 = matrix_tensor_product(t53, quantum_gate_create(2));
-		i+=2;
-	}
-	else if(i <= INDEX(t52, 0, 0).real * 2) {
-		if(!t53) t53 = t50;
-		else t53 = matrix_tensor_product(t53, t50);
-		i += (INDEX(t52, 0, 0).real + 1) * 2;
-	}
+{
+const unsigned int qubits_count = log2(t49->rows);
+const unsigned int preceding_qubits_count = INDEX(t51, 0, 0).real;
+const unsigned int measured_qubits_count = 
+	(INDEX(t52, 0, 0).real - INDEX(t51, 0, 0).real) + 1;
+const unsigned int proceeding_qubits_count = 
+	qubits_count - (INDEX(t52, 0, 0).real + 1);
+if(preceding_qubits_count) t53 = 
+	quantum_gate_create(pow(2, preceding_qubits_count));
+if(t53 == NULL) t53 = t50;
+else t53 = matrix_tensor_product(t53, t50);
+if(proceeding_qubits_count) t53 = 
+	matrix_tensor_product(t53, 
+		quantum_gate_create(pow(2, proceeding_qubits_count))
+	);
 }
 quantum_state *t54 = matrix_mul(t53, t49);
 quantum_state *t55 = matrix_mul(PARAM_GATE, t54);
 struct matrix *t56 = matrix_create_empty(1, 1);
 INDEX(t56, 0, 0) = complex_create(0.000000, 0.000000);
 quantum_gate *t57 = NULL;
-for(unsigned int i = 0; i < t55->rows;) {
-	if(i < INDEX(t56, 0, 0).real * 2 || i > INDEX(t56, 0, 0).real * 2) {
-		if(!t57) t57 = quantum_gate_create(2);
-		else t57 = matrix_tensor_product(t57, quantum_gate_create(2));
-		i+=2;
-	}
-	else if(i <= INDEX(t56, 0, 0).real * 2) {
-		if(!t57) t57 = H;
-		else t57 = matrix_tensor_product(t57, H);
-		i += (INDEX(t56, 0, 0).real + 1) * 2;
-	}
+{
+const unsigned int qubits_count = log2(t55->rows);
+const unsigned int preceding_qubits_count = INDEX(t56, 0, 0).real;
+const unsigned int measured_qubits_count = 
+	(INDEX(t56, 0, 0).real - INDEX(t56, 0, 0).real) + 1;
+const unsigned int proceeding_qubits_count = 
+	qubits_count - (INDEX(t56, 0, 0).real + 1);
+if(preceding_qubits_count) t57 = 
+	quantum_gate_create(pow(2, preceding_qubits_count));
+if(t57 == NULL) t57 = H;
+else t57 = matrix_tensor_product(t57, H);
+if(proceeding_qubits_count) t57 = 
+	matrix_tensor_product(t57, 
+		quantum_gate_create(pow(2, proceeding_qubits_count))
+	);
 }
 quantum_state *t58 = matrix_mul(t57, t55);
-qm_result *t59 = quantum_state_measure(t58);
+qm_result *t59 = quantum_state_measure_subsystem(t58, 0, 1);
 quantum_state *t60 = t59->state;
 printf(CYN"Quantum state of the system after measurement: \n"GRN);
 matrix_print(t60);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t59->value);
-qm_result *t61 = quantum_state_measure_subsystem(t60, 0, 2);
+qm_result *t61 = quantum_state_measure_subsystem(t60, 0, 0);
 quantum_state *t62 = t61->state;
 printf(CYN"Quantum state of the system after measurement: \n"GRN);
 matrix_print(t62);

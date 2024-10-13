@@ -620,15 +620,13 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             }
             else {
                 unsigned int scope = (e->reg.end - e->reg.start + 1);
-                unsigned int systems = regs->rows / 2 / scope;
-                if(systems <= 1) goto WHOLE_SYSTEM_MEASUREMENT_CODERUNNER;
-                unsigned int system_index;
-                if(scope - 1 + e->reg.start == 0) system_index = 0;
-                else system_index = systems / (scope - 1 + e->reg.start) - 1;
+                const unsigned int qubits_count = log2(regs->rows);
+                if(scope <= 0 || scope > qubits_count || e->reg.start > qubits_count) 
+                    goto WHOLE_SYSTEM_MEASUREMENT_CODERUNNER;
                 m_result = quantum_state_measure_subsystem(
                                            regs, 
-                                           system_index, 
-                                           systems
+                                           e->reg.start, 
+                                           e->reg.end
                                       );
                 result = m_result->state;
             }
@@ -642,35 +640,45 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
 
             result = NULL;
             if(e->right != NULL) {
-                for(unsigned int i = 0; i < regs->rows;) {
-                    if(i < e->reg.start * 2 || i > e->reg.end * 2) {
-                        if(!result) result = quantum_gate_create(2);
-                        else result = matrix_tensor_product(result, quantum_gate_create(2));
-                        i+=2;
-                    }
-                    else if(i <= e->reg.end * 2) {
-                        if(!result) result = left;
-                        else result = matrix_tensor_product(result, left);
-                        i += (e->reg.end+1) * 2;
-                    }
-                }
+                const unsigned int qubits_count = log2(regs->rows);
+
+                const unsigned int preceding_qubits_count = e->reg.start;
+                const unsigned int measured_qubits_count = 
+                    (e->reg.end - e->reg.start) + 1;
+                const unsigned int proceeding_qubits_count = 
+                    qubits_count - (e->reg.end + 1);
+
+                if(preceding_qubits_count) result = 
+                    quantum_gate_create(pow(2, preceding_qubits_count));
+
+                if(result == NULL) result = left;
+                else result = matrix_tensor_product(result, left);
+
+                if(proceeding_qubits_count) result = 
+                    matrix_tensor_product(result, 
+                        quantum_gate_create(pow(2, proceeding_qubits_count))
+                    );
             }
             else result = left;
             break;
         }
         case EXPR_AND: {
             left = expr_coderun(e->left, regs);
-            quantum_state *new_regs = matrix_mul(left, regs);
+            quantum_state *new_regs = e->left->kind == EXPR_MEASURE || 
+                (e->left->left && e->left->left->kind == EXPR_MEASURE) 
+                ? left  
+                : matrix_mul(left, regs);
             quantum_gate *concurrent_gate = expr_coderun(e->right, new_regs);
             if(concurrent_gate) result = concurrent_gate;
-            else if(new_regs) result = new_regs;
             else result = left;
             break;
         }
         case EXPR_CIRCUIT_STEP: {
             left = expr_coderun(e->left, regs);
-            quantum_state *new_regs = matrix_mul(left, regs);
-            if(new_regs == NULL) new_regs = left;
+            quantum_state *new_regs = e->left->kind == EXPR_MEASURE || 
+                (e->left->left && e->left->left->kind == EXPR_MEASURE) 
+                ? left 
+                : matrix_mul(left, regs);
             result = expr_coderun(e->right, new_regs);
             break;
         }
@@ -903,18 +911,16 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
             }
             else {
                 unsigned int scope = (e->reg.end - e->reg.start + 1);
-                unsigned int systems = regs->dimensions.rows / 2 / scope;
-                if(systems <= 1) goto WHOLE_SYSTEM_MEASUREMENT_CODEGENERATOR;
-                unsigned int system_index;
-                if(scope - 1 + e->reg.start == 0) system_index = 0;
-                else system_index = systems / (scope - 1 + e->reg.start) - 1;
+                const unsigned int qubits_count = log2(regs->dimensions.rows);
+                if(scope <= 0 || scope > qubits_count || e->reg.start > qubits_count) 
+                    goto WHOLE_SYSTEM_MEASUREMENT_CODEGENERATOR;
                 fprintf(result_file, "qm_result *%s "
                                     "= quantum_state_measure_subsystem(%s, %d, %d);\n", 
                                         e->name, 
                                         regs->name, 
-                                        system_index, 
-                                        systems);
-                regs->dimensions.rows /= systems;
+                                        e->reg.start, 
+                                        e->reg.end);
+                // regs->dimensions.rows /= systems;
             }
             regs->name = var_create();
             fprintf(result_file, "quantum_state *%s = %s->state;\n", 
@@ -956,27 +962,37 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                 }
                 e->name = var_create();
                 fprintf(result_file, 
-                    "quantum_gate *%s = NULL;\n"
-                    "for(unsigned int i = 0; i < %s->rows;) {\n"
-                    "\tif(i < INDEX(%s, 0, 0).real * 2 || i > INDEX(%s, 0, 0).real * 2) {\n"
-                    "\t\tif(!%s) %s = quantum_gate_create(2);\n"
-                    "\t\telse %s = matrix_tensor_product(%s, quantum_gate_create(2));\n"
-                    "\t\ti+=2;\n"
-                    "\t}\n"
-                    "\telse if(i <= INDEX(%s, 0, 0).real * 2) {\n"
-                    "\t\tif(!%s) %s = %s;\n"
-                    "\t\telse %s = matrix_tensor_product(%s, %s);\n"
-                    "\t\ti += (INDEX(%s, 0, 0).real + 1) * 2;\n"
-                    "\t}\n"
-                    "}\n",              e->name, 
+                        "quantum_gate *%s = NULL;\n"
+
+                        "{\n"
+                        "const unsigned int qubits_count = log2(%s->rows);\n"
+
+                        "const unsigned int preceding_qubits_count = INDEX(%s, 0, 0).real;\n"
+                        "const unsigned int measured_qubits_count = \n"
+                        "\t(INDEX(%s, 0, 0).real - INDEX(%s, 0, 0).real) + 1;\n"
+                        "const unsigned int proceeding_qubits_count = \n"
+                        "\tqubits_count - (INDEX(%s, 0, 0).real + 1);\n"
+
+                        "if(preceding_qubits_count) %s = \n"
+                        "\tquantum_gate_create(pow(2, preceding_qubits_count));\n"
+
+                        "if(%s == NULL) %s = %s;\n"
+                        "else %s = matrix_tensor_product(%s, %s);\n"
+
+                        "if(proceeding_qubits_count) %s = \n"
+                        "\tmatrix_tensor_product(%s, \n"
+                        "\t\tquantum_gate_create(pow(2, proceeding_qubits_count))\n"
+                        "\t);\n"
+                        "}\n",          e->name, 
                                         regs->name, 
-                                        start_name, end_name, 
-                                        e->name, e->name, 
-                                        e->name, e->name, 
+                                        start_name, 
+                                        end_name, start_name, 
                                         end_name, 
+                                        e->name, 
                                         e->name, e->name, e->left->name, 
                                         e->name, e->name, e->left->name, 
-                                        end_name);
+                                        e->name, 
+                                        e->name);
             }
             else e->name = e->left->name;
             break;
