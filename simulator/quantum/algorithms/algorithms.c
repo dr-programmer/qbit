@@ -44,7 +44,7 @@ short algorithm_deutsch(const quantum_gate * const gate) {
     */
 
     // A way of computing the result by measuring only the first qubit
-    qm_result *result = quantum_state_measure_subsystem(combined, 0, 2);
+    qm_result *result = quantum_state_measure_subsystem(combined, 0, 0);
     printf("\nDeutch algorithm measurement result state: \n");
     matrix_print(result->state);
     return result->value;
