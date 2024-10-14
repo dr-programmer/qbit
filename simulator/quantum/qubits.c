@@ -164,5 +164,7 @@ S
     }
 P(result)
 E
+    if(result == NULL)
+        printf("Error measuring subsystem: non-valid quantum state provided\n");
     return result;
 }
