@@ -664,8 +664,7 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
         }
         case EXPR_AND: {
             left = expr_coderun(e->left, regs);
-            quantum_state *new_regs = e->left->kind == EXPR_MEASURE || 
-                (e->left->left && e->left->left->kind == EXPR_MEASURE) 
+            quantum_state *new_regs = e->left->kind == EXPR_MEASURE 
                 ? left  
                 : matrix_mul(left, regs);
             quantum_gate *concurrent_gate = expr_coderun(e->right, new_regs);
@@ -675,11 +674,9 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
         }
         case EXPR_CIRCUIT_STEP: {
             left = expr_coderun(e->left, regs);
-            quantum_state *new_regs = e->left->kind == EXPR_MEASURE || 
-                (e->left->left && e->left->left->kind == EXPR_MEASURE) 
-                ? left 
-                : matrix_mul(left, regs);
-            if(new_regs == NULL) new_regs = left;
+            quantum_state *new_regs = e->left->kind == EXPR_APPLY_GATE 
+                ? matrix_mul(left, regs) 
+                : left;
             result = expr_coderun(e->right, new_regs);
             break;
         }
