@@ -364,6 +364,7 @@ qbit [--flags] filename.qsm [--flags]
   - `--fast-run` - An additional specifier to the `-gen-qset [executable filename]` flag which enables the internal `compile_time_calculations` flag that tells the **Q Assembly** compiler to run the **Coderunner** on the definitions of all the **quantum gates** and **quantum registers**, and run the **Codegenerator** only on the **quantum circuit** itself.
   - `--show-pcode` - Tells the **Q Assembly** compiler to **structure** and **print** the parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
   - `--show-lpcode` - Tells the **Q Assembly** compiler to **structure** and **print** the **loaded** parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
+  - `--show-qstate` - Tells the **Q Assembly** compiler to **show** the **quantum state** of the system after **measurement**. By default **Q Assembly** only displays the **classical bit representation** of the system after **measurement**.
 
 > [!TIP]
 > **Q-bit** uses a convention which implies that **flags** starting with `-` **require** an additional **specifier** after them, and **flags** with `--` **do not**.
