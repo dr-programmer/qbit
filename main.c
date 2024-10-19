@@ -26,6 +26,7 @@ FILE *result_file = NULL;
 
 unsigned short show_pcode = 0;
 unsigned short show_lpcode = 0;
+unsigned short show_qstate = 0;
 unsigned short gen_qset = 0;
 unsigned short compile_time_calculations = 0;
 
@@ -125,6 +126,9 @@ int main(int argc, char **argv) {S
         }
         else if(!strcmp(argv[i], "--show-lpcode")) {
             show_lpcode = 1;
+        }
+        else if(!strcmp(argv[i], "--show-qstate")) {
+            show_qstate = 1;
         }
         else if(!strcmp(argv[i], "-gen-qset")) {
             gen_qset = 1;
