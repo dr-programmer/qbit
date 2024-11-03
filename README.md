@@ -7,7 +7,7 @@
 ### What is Q-bit?
   **Q-bit** is a quantum simulator project containing the following parts:
    - a **quantum computer simulator** and its **Q-SET** instruction set
-   - a first of its kind **quantum circuit-like assembly language**, called **Q Assembly**
+   - a first of its kind **quantum circuit-like programming language**, called **Q Assembly**
    - an **automated scope-based dynamic memory management system** written in C, named **SMART**
 
 ### The Q-bit quantum computer simulator
@@ -112,7 +112,7 @@ short algorithm_deutsch(const quantum_gate * const gate) {
 ```
 ### Q Assembly
   #### **About**
-   - **Q Assembly** is a first of its kind quantum circuit-like assembly language
+   - **Q Assembly** is a first of its kind quantum **circuit-like** programming language
    - it is designed for the **Q-bit quantum computer simulator**
    - it runs on the **Q-SET** instruction set
    - also, **Q Assembly** incorporates some parts _(although not many)_ from [**Quark**](https://github.com/dr-programmer/quark), making it the first language of the **Quark family**
