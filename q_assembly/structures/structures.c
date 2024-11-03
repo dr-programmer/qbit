@@ -214,6 +214,7 @@ extern int line;
 extern char *global_name_of_starting_file;
 
 extern unsigned short show_lpcode;
+extern unsigned short show_qstate;
 
 void decl_resolve(struct decl * const d) {
     if(!d) return;
@@ -630,8 +631,10 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
                                       );
                 result = m_result->state;
             }
-            printf(CYN"Quantum state of the system after measurement: \n"GRN);
-            matrix_print(result);
+            if(show_qstate) {
+                printf(CYN"Quantum state of the system after measurement: \n"GRN);
+                matrix_print(result);
+            }
             printf(CYN"Classical bit representation: "GRN"%d \n"RESET, m_result->value);
             break;
         }
@@ -924,12 +927,15 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
             fprintf(result_file, "quantum_state *%s = %s->state;\n", 
                                         regs->name, 
                                         e->name);
+            if(show_qstate) {
+                fprintf(result_file, 
+                    "printf(CYN\"Quantum state of the system after measurement: \\n\"GRN);\n"
+                    "matrix_print(%s);\n", 
+                                        regs->name);
+            }
             fprintf(result_file, 
-                "printf(CYN\"Quantum state of the system after measurement: \\n\"GRN);\n"
-                "matrix_print(%s);\n"
                 "printf(CYN\"Classical bit representation: \"GRN\"%%d \\n\"RESET, "
                                                                             "%s->value);\n", 
-                                        regs->name, 
                                         e->name);
             break;
         case EXPR_RANGE: 
