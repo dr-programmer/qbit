@@ -113,14 +113,15 @@ short algorithm_deutsch(const quantum_gate * const gate) {
 ### Q Assembly
   #### **About**
    - **Q Assembly** is a first of its kind quantum **circuit-like** programming language
-   - it is designed for the **Q-bit quantum computer simulator**
-   - it runs on the **Q-SET** instruction set
+   - it is designed to be **easily** compiled and run on **all** kinds of **quantum computer simulators** and **quantum computers**
+   - **coderunning** and **codegeneration** modules are built for the **Q-bit quantum computer simulator** on the **Q-SET** instruction set
    - also, **Q Assembly** incorporates some parts _(although not many)_ from [**Quark**](https://github.com/dr-programmer/quark), making it the first language of the **Quark family**
 
   #### **Purpose**
    - **Q Assembly** makes it easier to implement **quantum circuits** as its grammar is **specifically designed** for them
    - it is much more **readable** and **easier to understand** than a full-blown **Q-SET** instructions file
-   - **Q Assembly** boasts a **fully modular** compiler design, which is **perfect** for **future quantum computer languages** to use as a **core** and build **new features** **on top**
+   - **Q Assembly** boasts a **fully modular** compiler design, which **enables** its **multiplatform** capabilities 
+   - the **modular compiler** design is also **perfect** for **future quantum computer languages** to use as a **core** and build **new features** **on top**
    - it also gives a **great middle ground** for **higher level quantum computer languages** to use as an **intermediate representation**
 
 > [!NOTE]
