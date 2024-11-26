@@ -351,6 +351,12 @@ The following **must** be **installed** in order to **build** the **Q-bit projec
     export LIBRARY_PATH=$LIBRARY_PATH:[path-to-qbit]/build
     ```
 
+ 9. Reload the bash configuration:
+
+    ```bash
+    source ~/.bashrc
+    ```
+
 ## The Q-bit CLI
 ### Basic usage
 ```console
