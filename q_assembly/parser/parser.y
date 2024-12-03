@@ -186,7 +186,9 @@ number  : TOKEN_COMPLEX_LITERAL
                                 yytext[len-1] = '\0';
                                 imaginary = 1;
                         }
-                        float num = atof(yytext);
+                        float num;
+                        if(!imaginary || len != 1) num = atof(yytext);
+                        else num = 1;
                         struct complex result = imaginary == 0 
                                                 ? complex_create(num, 0) 
                                                 : complex_create(0, num)
