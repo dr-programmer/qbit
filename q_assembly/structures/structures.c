@@ -670,6 +670,8 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             quantum_state *new_regs = e->left->kind == EXPR_MEASURE 
                 ? left  
                 : matrix_mul(left, regs);
+            if(e->left->kind == EXPR_APPLY_GATE && new_regs->columns != 1) 
+                new_regs = matrix_mul(new_regs, matrix_get_adjoint(left));
             quantum_gate *concurrent_gate = expr_coderun(e->right, new_regs);
             if(concurrent_gate) result = concurrent_gate;
             else result = new_regs;
@@ -680,6 +682,8 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             quantum_state *new_regs = e->left->kind == EXPR_APPLY_GATE 
                 ? matrix_mul(left, regs) 
                 : left;
+            if(e->left->kind == EXPR_APPLY_GATE && new_regs->columns != 1) 
+                new_regs = matrix_mul(new_regs, matrix_get_adjoint(left));
             result = expr_coderun(e->right, new_regs);
             break;
         }
@@ -1010,6 +1014,12 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                                         regs->name, 
                                         e->left->name, 
                                         old_regs_name);
+                fprintf(result_file, "if(%s->columns != 1) \n"
+                                        "\t%s = matrix_mul(%s, matrix_get_adjoint(%s));\n", 
+                                        regs->name, 
+                                        regs->name, 
+                                        regs->name, 
+                                        e->left->name);
             }
             // If e->left->kind == EXPR_MEASURE, then the reg->name field will already
             // be changed to the new register after the measurement.

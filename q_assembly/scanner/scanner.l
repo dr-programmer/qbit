@@ -35,7 +35,7 @@ LETTERS [a-zA-Z]
 \.{3}       {return TOKEN_RANGE;}
 \|          {return TOKEN_SEPARATOR;}
 load        {return TOKEN_LOAD;}
-{DIGITS}+(\.{DIGITS}+)?i?   {return TOKEN_COMPLEX_LITERAL;}
+({DIGITS}+(\.{DIGITS}+)?i?|i)   {return TOKEN_COMPLEX_LITERAL;}
 ({LETTERS}|_)({LETTERS}|{DIGITS}|_)*  {return TOKEN_IDENT;}
 \".*\"      {return TOKEN_STRING_LITERAL;}
 \(          {return TOKEN_LPAREN;}
