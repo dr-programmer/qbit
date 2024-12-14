@@ -294,12 +294,13 @@ The following **must** be **installed** in order to **build** the **Q-bit projec
   - `flex`
   - `bison`
   - `git`
+  - `nvcc`
 
 ### Build on Linux
  1. Install the dependencies
 
     ```console
-    sudo apt-get install build-essential flex bison git
+    sudo apt-get install build-essential flex bison git nvidia-cuda-toolkit
     ```
 
 > [!IMPORTANT]
