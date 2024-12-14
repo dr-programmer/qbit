@@ -3,9 +3,11 @@
 #include <time.h>
 #define SMART_DEALLOCATION
 #include "qbit.h"
+extern unsigned short cuda_enabled;
 
 int main() {S
 srand(time(0));
+cuda_enabled = 0;
 struct matrix *t0 = matrix_create_empty(1, 1);
 INDEX(t0, 0, 0) = complex_create(2.718280, 0.000000);
 quantum_gate *e = t0;
@@ -109,11 +111,13 @@ if(proceeding_qubits_count) t39 =
 	);
 }
 quantum_state *t40 = matrix_mul(t39, t37);
+if(t40->columns != 1) 
+	t40 = matrix_mul(t40, matrix_get_adjoint(t39));
 quantum_state *t41 = matrix_mul(CNOT, t40);
+if(t41->columns != 1) 
+	t41 = matrix_mul(t41, matrix_get_adjoint(CNOT));
 qm_result *t42 = quantum_state_measure(t41);
 quantum_state *t43 = t42->state;
-printf(CYN"Quantum state of the system after measurement: \n"GRN);
-matrix_print(t43);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t42->value);
 struct matrix *t44 = matrix_create_empty(1, 1);
 INDEX(t44, 0, 0) = complex_create(1.000000, 0.000000);
@@ -139,6 +143,8 @@ struct matrix *t56 = matrix_tensor_product(t54, t55);
 struct matrix *t57 = matrix_mul(t53, t56);
 struct matrix *t58 = matrix_sub(t50, t57);
 quantum_state *t59 = matrix_mul(CNOT, t58);
+if(t59->columns != 1) 
+	t59 = matrix_mul(t59, matrix_get_adjoint(CNOT));
 struct matrix *t60 = matrix_create_empty(1, 1);
 INDEX(t60, 0, 0) = complex_create(0.000000, 0.000000);
 quantum_gate *t61 = NULL;
@@ -159,10 +165,10 @@ if(proceeding_qubits_count) t61 =
 	);
 }
 quantum_state *t62 = matrix_mul(t61, t59);
+if(t62->columns != 1) 
+	t62 = matrix_mul(t62, matrix_get_adjoint(t61));
 qm_result *t63 = quantum_state_measure(t62);
 quantum_state *t64 = t63->state;
-printf(CYN"Quantum state of the system after measurement: \n"GRN);
-matrix_print(t64);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t63->value);
 qubit *t65 = quantum_state_create(0, 2);
 struct matrix *t66 = matrix_mul(H, t65);
@@ -171,8 +177,6 @@ struct matrix *t67 = matrix_mul(H, minus);
 quantum_state *t68 = matrix_tensor_product(minus, t67);
 qm_result *t69 = quantum_state_measure(t68);
 quantum_state *t70 = t69->state;
-printf(CYN"Quantum state of the system after measurement: \n"GRN);
-matrix_print(t70);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t69->value);
 qubit *t71 = quantum_state_create(0, 2);
 struct matrix *t72 = matrix_create_empty(1, 1);
@@ -211,6 +215,8 @@ if(proceeding_qubits_count) t85 =
 	);
 }
 quantum_state *t86 = matrix_mul(t85, t80);
+if(t86->columns != 1) 
+	t86 = matrix_mul(t86, matrix_get_adjoint(t85));
 struct matrix *t87 = matrix_create_empty(1, 1);
 INDEX(t87, 0, 0) = complex_create(2.000000, 0.000000);
 struct matrix *t88 = matrix_tensor_product_n_times(H, INDEX(t87, 0, 0).real);
@@ -236,25 +242,19 @@ if(proceeding_qubits_count) t91 =
 	);
 }
 quantum_state *t92 = matrix_mul(t91, t86);
+if(t92->columns != 1) 
+	t92 = matrix_mul(t92, matrix_get_adjoint(t91));
 qm_result *t93 = quantum_state_measure_subsystem(t92, 4, 4);
 quantum_state *t94 = t93->state;
-printf(CYN"Quantum state of the system after measurement: \n"GRN);
-matrix_print(t94);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t93->value);
 qm_result *t95 = quantum_state_measure_subsystem(t94, 0, 2);
 quantum_state *t96 = t95->state;
-printf(CYN"Quantum state of the system after measurement: \n"GRN);
-matrix_print(t96);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t95->value);
 qm_result *t97 = quantum_state_measure_subsystem(t96, 4, 4);
 quantum_state *t98 = t97->state;
-printf(CYN"Quantum state of the system after measurement: \n"GRN);
-matrix_print(t98);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t97->value);
 qm_result *t99 = quantum_state_measure(t98);
 quantum_state *t100 = t99->state;
-printf(CYN"Quantum state of the system after measurement: \n"GRN);
-matrix_print(t100);
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t99->value);
 E
 return 0;

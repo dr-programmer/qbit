@@ -4,6 +4,7 @@ SRC_DIR := .
 BUILD_DIR := ./build
 
 SRCS := $(shell find $(SRC_DIR) -name '*.c' -or -name '*.s' -or -name '*.l' -or -name '*.y')
+SRCS += $(shell find $(SRC_DIR) -name '*.cu')
 SRCS := $(filter-out $(SRC_DIR)/%.l.c $(SRC_DIR)/%.y.c, $(SRCS))
 SRCS := $(filter-out $(SRC_DIR)/%.qsm.c, $(SRCS))
 
@@ -11,6 +12,7 @@ OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.c.o)
 OBJS := $(OBJS:$(SRC_DIR)/%.s=$(BUILD_DIR)/%.s.o)
 OBJS := $(OBJS:$(SRC_DIR)/%.l=$(BUILD_DIR)/%.l.c.o)
 OBJS := $(OBJS:$(SRC_DIR)/%.y=$(BUILD_DIR)/%.y.c.o)
+OBJS := $(OBJS:$(SRC_DIR)/%.cu=$(BUILD_DIR)/%.cu.o)
 
 DEPS := $(OBJS:.o=.d)
 
@@ -20,7 +22,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS := $(INC_FLAGS) -MMD -MP
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) -lm
+	$(CC) $(OBJS) -o $@ $(LDFLAGS) -lm -lcudart
 
 $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
 	mkdir -p $(dir $@)
@@ -39,6 +41,10 @@ $(BUILD_DIR)/%.y.c.o: $(SRC_DIR)/%.y
 	mkdir -p $(dir $@)
 	bison --defines=$(dir $<)token.h --output=$<.c --graph=$<.dot -v $<
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<.c -o $@
+
+$(BUILD_DIR)/%.cu.o: $(SRC_DIR)/%.cu
+	mkdir -p $(dir $@)
+	-nvcc $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean clean-all build-lib clean-lib
 clean:
