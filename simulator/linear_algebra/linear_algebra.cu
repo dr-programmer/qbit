@@ -6,16 +6,6 @@ extern "C" {
 
 #include <stdio.h>
 
-#define CUDA_CHECK(call) \
-    { \
-        cudaError_t err = call; \
-        if (err != cudaSuccess) { \
-            fprintf(stderr, "CUDA error in %s at line %d: %s\n", \
-                                __FILE__, __LINE__, cudaGetErrorString(err)); \
-            exit(err); \
-        } \
-    }
-
 __global__ void matrix_add_kernel(const struct complex * const m1, 
                                     const struct complex * const m2, 
                                     struct complex * const result, 
@@ -45,10 +35,12 @@ __global__ void matrix_mul_kernel(const struct complex * const m1,
                                     struct complex * const result, 
                                     size_t rows, size_t columns, size_t shared_dim) 
 {
-    unsigned int row = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned int column = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if(row >= rows || column >= columns) return;
+    if(index >= rows * columns) return;
+
+    unsigned int row = index / columns;
+    unsigned int column = index % columns;
 
     struct complex sum = {0, 0};
     for(size_t i = 0; i < shared_dim; i++) {
@@ -81,7 +73,7 @@ __global__ void print_array(struct complex *array, int size) {
 }
 struct matrix *matrix_operation_cuda(const void *m1_s_void, 
                                         const void *m2_void, 
-                                        const int operation) 
+                                        const enum operation operation) 
 {
     if(!m1_s_void || !m2_void) return NULL;
 
@@ -162,18 +154,12 @@ struct matrix *matrix_operation_cuda(const void *m1_s_void,
 
     // Ensures the number of blocks is enough by rounding up
     int blocksPerGrid = (length + DTCPB - 1) / DTCPB;
-    dim3 threadsPerBlock2D(DTCPB2D, DTCPB2D);
-    dim3 blocksPerGrid2D;
-    if(operation == OPERATION_MUL) 
-        blocksPerGrid2D = dim3((m2->columns + threadsPerBlock2D.x - 1) / threadsPerBlock2D.x, 
-                                (m1->rows + threadsPerBlock2D.y - 1) / threadsPerBlock2D.y);
     if(operation == OPERATION_ADD) 
         matrix_add_kernel<<<blocksPerGrid, DTCPB>>>(cuda_m1, cuda_m2, cuda_result, length);
     else if(operation == OPERATION_SUB) 
         matrix_sub_kernel<<<blocksPerGrid, DTCPB>>>(cuda_m1, cuda_m2, cuda_result, length);
     else if(operation == OPERATION_MUL) 
-        matrix_mul_kernel<<<blocksPerGrid2D, threadsPerBlock2D>>>(cuda_m1, cuda_m2, 
-                                                        cuda_result, 
+        matrix_mul_kernel<<<blocksPerGrid, DTCPB>>>(cuda_m1, cuda_m2, cuda_result, 
                                                         m1->rows, m2->columns, m1->columns);
     else if(operation == OPERATION_MUL_SCALAR) 
         matrix_mul_scalar_kernel<<<blocksPerGrid, DTCPB>>>(s, cuda_m2, cuda_result, length);
@@ -215,9 +201,9 @@ struct matrix *matrix_operation_cuda(const void *m1_s_void,
     printf("M2 length: %zu\n", length_m2);
     #endif
 
-    if(operation != OPERATION_MUL_SCALAR) cudaFree(cuda_m1);
-    cudaFree(cuda_m2);
-    cudaFree(cuda_result);
+    if(operation != OPERATION_MUL_SCALAR) CUDA_CHECK(cudaFree(cuda_m1));
+    CUDA_CHECK(cudaFree(cuda_m2));
+    CUDA_CHECK(cudaFree(cuda_result));
 
     #ifdef LINEAR_ALGEBRA_CUDA_SHOW_OPERATION_CALCULATIONS
     printf("Freed\n");
@@ -244,4 +230,109 @@ extern "C" struct matrix *matrix_mul_scalar_cuda(const struct complex s,
                                     const struct matrix * const m) 
 {
     return matrix_operation_cuda(&s, m, OPERATION_MUL_SCALAR);
+}
+
+__global__ void matrix_tensor_product_kernel(const struct complex * const m1, 
+                                                const struct complex * const m2, 
+                                                struct complex * const result, 
+                                                size_t rows, size_t columns, 
+                                                size_t m1_rows, size_t m1_columns, 
+                                                size_t m2_rows, size_t m2_columns) 
+{
+    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(index >= rows * columns) return;
+
+    unsigned int row = index / columns;
+    unsigned int column = index % columns;
+
+    struct complex a = m1[(row / m2_rows) * m1_columns + (column / m2_columns)];
+    struct complex b = m2[(row % m2_rows) * m2_columns + (column % m2_columns)];
+
+    result[row * columns + column] = {a.real * b.real - a.imaginary * b.imaginary, 
+                                        a.real * b.imaginary + a.imaginary * b.real};
+}
+
+extern "C" struct matrix *matrix_tensor_product_cuda(const struct matrix * const m1, 
+                                                        const struct matrix * const m2) 
+{
+    if(!m1 || !m2) return NULL;
+
+    #ifdef LINEAR_ALGEBRA_CUDA_SHOW_OPERATION_CALCULATIONS
+    printf("Tensor product\n");
+    #endif
+
+    size_t rows = m1->rows * m2->rows;
+    size_t columns = m1->columns * m2->columns;
+
+    size_t length_m1 = m1->rows * m1->columns;
+    size_t size_m1 = sizeof(struct complex) * length_m1;
+    size_t length_m2 = m2->rows * m2->columns;
+    size_t size_m2 = sizeof(struct complex) * length_m2;
+    size_t length = length_m1 * length_m2;
+    size_t size = sizeof(struct complex) * length;
+
+    struct complex *cuda_m1, *cuda_m2, *cuda_result;
+    CUDA_CHECK(cudaMalloc(&cuda_m1, size_m1));
+    CUDA_CHECK(cudaMalloc(&cuda_m2, size_m2));
+    CUDA_CHECK(cudaMalloc(&cuda_result, size));
+
+    #ifdef LINEAR_ALGEBRA_CUDA_SHOW_OPERATION_CALCULATIONS
+    printf("Allocated\n");
+    #endif
+
+    CUDA_CHECK(cudaMemcpy(cuda_m1, m1->fields, size_m1, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(cuda_m2, m2->fields, size_m2, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemset(cuda_result, 0, size));
+
+    #ifdef LINEAR_ALGEBRA_CUDA_SHOW_OPERATION_CALCULATIONS
+    printf("To kernel\n");
+    #endif
+
+    // Ensures the number of blocks is enough by rounding up
+    int blocksPerGrid = (length + DTCPB - 1) / DTCPB;
+    matrix_tensor_product_kernel<<<blocksPerGrid, DTCPB>>>(cuda_m1, cuda_m2, 
+                                                                    cuda_result, 
+                                                                    rows, columns, 
+                                                                    m1->rows, m1->columns, 
+                                                                    m2->rows, m2->columns);
+    CUDA_CHECK(cudaGetLastError());
+    CUDA_CHECK(cudaDeviceSynchronize());
+
+    #ifdef LINEAR_ALGEBRA_CUDA_SHOW_OPERATION_CALCULATIONS
+    printf("After kernel\n");
+    #endif
+
+    struct matrix *result = matrix_create_empty(rows, columns);
+    CUDA_CHECK(cudaMemcpy(result->fields, cuda_result, size, cudaMemcpyDeviceToHost));
+
+    #ifdef LINEAR_ALGEBRA_CUDA_SHOW_OPERATION_CALCULATIONS_THOROUGH
+    printf("result:\n");
+    matrix_print(result);
+    printf("For:\n");
+    matrix_print(m1);
+    printf("And:\n");
+    matrix_print(m2);
+    printf("M1\n");
+    print_array<<<blocksPerGrid2D, threadsPerBlock2D>>>(cuda_m1, length_m1);
+    CUDA_CHECK(cudaDeviceSynchronize());
+    printf("M2\n");
+    print_array<<<blocksPerGrid2D, threadsPerBlock2D>>>(cuda_m2, length_m2);
+    CUDA_CHECK(cudaDeviceSynchronize());
+    printf("Result\n");
+    print_array<<<blocksPerGrid2D, threadsPerBlock2D>>>(cuda_result, length);
+    CUDA_CHECK(cudaDeviceSynchronize());
+    printf("M1 length: %zu\n", length_m1);
+    printf("M2 length: %zu\n", length_m2);
+    #endif
+
+    CUDA_CHECK(cudaFree(cuda_m1));
+    CUDA_CHECK(cudaFree(cuda_m2));
+    CUDA_CHECK(cudaFree(cuda_result));
+
+    #ifdef LINEAR_ALGEBRA_CUDA_SHOW_OPERATION_CALCULATIONS
+    printf("Freed\n");
+    #endif
+
+    return result;
 }

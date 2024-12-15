@@ -190,7 +190,6 @@ int main(int argc, char **argv) {S
                                         "#include <time.h>\n"
                                         "#define SMART_DEALLOCATION\n"
                                         "#include \"qbit.h\"\n");
-                fprintf(result_file, "extern unsigned short cuda_enabled;\n");
                 fprintf(result_file, "\nint main() {S\nsrand(time(0));\n");
                 fprintf(result_file, "cuda_enabled = %d;\n", cuda_enabled);
                 decl_codegen(parser_result);

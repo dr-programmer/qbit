@@ -11,10 +11,7 @@ extern "C" {
 
 #include "linear_algebra.h"
 
-#define DEFAULT_THREAD_COUNT_PER_BLOCK 256
-#define DTCPB DEFAULT_THREAD_COUNT_PER_BLOCK
-#define DEFAULT_THREAD_COUNT_PER_BLOCK_2D 16
-#define DTCPB2D DEFAULT_THREAD_COUNT_PER_BLOCK_2D
+#include "cuda_global.h"
 
 enum operation {
     OPERATION_ADD,
@@ -33,6 +30,9 @@ struct matrix *matrix_mul_cuda(const struct matrix * const m1,
                                     const struct matrix * const m2);
 struct matrix *matrix_mul_scalar_cuda(const struct complex s, 
                                     const struct matrix * const m);
+
+struct matrix *matrix_tensor_product_cuda(const struct matrix * const m1, 
+                                            const struct matrix * const m2);
 
 #ifdef __cplusplus
 }

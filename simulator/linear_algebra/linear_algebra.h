@@ -15,6 +15,8 @@ struct matrix {
 typedef struct matrix vector;
 typedef struct matrix dual_vector;
 
+extern unsigned short cuda_enabled;
+
 struct matrix *matrix_create(const unsigned int rows, const unsigned int columns);
 struct matrix *matrix_create_empty(const unsigned int rows, const unsigned int columns);
 

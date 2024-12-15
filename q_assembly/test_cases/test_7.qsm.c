@@ -3,7 +3,6 @@
 #include <time.h>
 #define SMART_DEALLOCATION
 #include "qbit.h"
-extern unsigned short cuda_enabled;
 
 int main() {S
 srand(time(0));

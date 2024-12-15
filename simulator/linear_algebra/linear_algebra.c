@@ -126,6 +126,10 @@ struct matrix *matrix_tensor_product(const struct matrix * const m1,
 {
     if(!m1 || !m2) return NULL;
 
+    if(cuda_enabled) {
+        return matrix_tensor_product_cuda(m1, m2);
+    }
+
     struct matrix *result = matrix_create_empty(m1->rows * m2->rows, 
                                                     m1->columns * m2->columns);
     for(unsigned int i = 0; i < result->rows; i++) {
