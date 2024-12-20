@@ -1,0 +1,35 @@
+load ("include/gates.qsm")
+
+BIG_GATE (
+    (H)^@11
+)
+
+TEST_ADD (
+    (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+    + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) + (BIG_GATE) 
+)
+
+{
+    {|0>^@11}
+}
+    -> (TEST_ADD) + (TEST_ADD) * 3 * 8i + (H)^@11 * (3 + 5i) * (I)^@11
+    -> <[0 ... 5]
+    -> <[3]
+    -> (H)^@11 * (3 + 5i) * (I)^@11
+    -> <[3 ... 5] && <[6 ... 8]
+    -> (H)^@2[3 ... 4]
+    -> <[3 ... 8]

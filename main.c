@@ -29,6 +29,7 @@ unsigned short show_lpcode = 0;
 unsigned short show_qstate = 0;
 unsigned short gen_qset = 0;
 unsigned short compile_time_calculations = 0;
+extern unsigned short cuda_enabled; // Found in linear_algebra/linear_algebra.c
 
 char *global_name_of_starting_file = NULL;
 
@@ -142,6 +143,9 @@ int main(int argc, char **argv) {S
         else if(!strcmp(argv[i], "--fast-run")) {
             compile_time_calculations = 1;
         }
+        else if(!strcmp(argv[i], "--cuda")) {
+            cuda_enabled = 1;
+        }
         else {
             name_of_starting_file = argv[i];
         }
@@ -187,6 +191,7 @@ int main(int argc, char **argv) {S
                                         "#define SMART_DEALLOCATION\n"
                                         "#include \"qbit.h\"\n");
                 fprintf(result_file, "\nint main() {S\nsrand(time(0));\n");
+                fprintf(result_file, "cuda_enabled = %d;\n", cuda_enabled);
                 decl_codegen(parser_result);
                 fprintf(result_file, "E\nreturn 0;\n}\n");
                 fclose(result_file);
@@ -200,7 +205,7 @@ int main(int argc, char **argv) {S
                     C
                     exit(ERROR_ALLOCATING_MEMORY);
                 }
-                sprintf(compile_command, "gcc -x c %s -o %s -lqbit -lm", 
+                sprintf(compile_command, "gcc -x c %s -o %s -lqbit -lm -lcudart", 
                                                     result_file_name, 
                                                     name_of_file);
                 system(compile_command);
@@ -208,7 +213,12 @@ int main(int argc, char **argv) {S
             }
             else {
                 putc('\n', stdout);
+                clock_t time_start = clock();
                 decl_coderun(parser_result);
+                clock_t time_end = clock();
+                printf(MAG"\nExecution time (for the Coderunner): "
+                        BLU"%f seconds \n"RESET, 
+                            (double)(time_end - time_start) / CLOCKS_PER_SEC);
             }
         }
         printf("\nProgram compiled with %d error/s \n", error_count);

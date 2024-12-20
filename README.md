@@ -294,12 +294,13 @@ The following **must** be **installed** in order to **build** the **Q-bit projec
   - `flex`
   - `bison`
   - `git`
+  - `nvcc`
 
 ### Build on Linux
  1. Install the dependencies
 
     ```console
-    sudo apt-get install build-essential flex bison git
+    sudo apt-get install build-essential flex bison git nvidia-cuda-toolkit
     ```
 
 > [!IMPORTANT]
@@ -372,6 +373,7 @@ qbit [--flags] filename.qsm [--flags]
   - `--show-pcode` - Tells the **Q Assembly** compiler to **structure** and **print** the parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
   - `--show-lpcode` - Tells the **Q Assembly** compiler to **structure** and **print** the **loaded** parsed code back from the **AST** memory structure into **Q Assembly** form. Read more about [The Abstract Syntax Tree](#structure-1).
   - `--show-qstate` - Tells the **Q Assembly** compiler to **show** the **quantum state** of the system after **measurement**. By default **Q Assembly** only displays the **classical bit representation** of the system after **measurement**.
+  - `--cuda` - Initialises the internal `cuda_enabled` flag that tells the **Q-bit quantum computer simulator** to **accelerate** computations with **CUDA** on **NVIDIA GPUs**.
 
 > [!TIP]
 > **Q-bit** uses a convention which implies that **flags** starting with `-` **require** an additional **specifier** after them, and **flags** with `--` **do not**.

@@ -1,6 +1,9 @@
 #include "linear_algebra.h"
+#include "linear_algebra_cuda.h"
 #define SMART_DEALLOCATION
 #include "../smart_allocation/smart_allocation.h"
+
+unsigned short cuda_enabled = 0;
 
 struct matrix *matrix_create(const unsigned int rows, const unsigned int columns) {
     struct matrix *temp = (struct matrix *)smart_allocate(1, sizeof(struct matrix));
@@ -38,6 +41,10 @@ struct matrix *matrix_add(const struct matrix * const m1, const struct matrix * 
     if(!m1 || !m2) return NULL;
     if(m1->rows != m2->rows || m1->columns != m2->columns) return NULL;
 
+    if(cuda_enabled) {
+        return matrix_add_cuda(m1, m2);
+    }
+
     struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
         for(unsigned int j = 0; j < m1->columns; j++) {
@@ -49,6 +56,10 @@ struct matrix *matrix_add(const struct matrix * const m1, const struct matrix * 
 struct matrix *matrix_sub(const struct matrix * const m1, const struct matrix * const m2) {
     if(!m1 || !m2) return NULL;
     if(m1->rows != m2->rows || m1->columns != m2->columns) return NULL;
+
+    if(cuda_enabled) {
+        return matrix_sub_cuda(m1, m2);
+    }
 
     struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
@@ -82,6 +93,10 @@ struct matrix *matrix_mul(const struct matrix * const m1, const struct matrix * 
 
     if(m1->columns != m2->rows) return NULL;
 
+    if(cuda_enabled) {
+        return matrix_mul_cuda(m1, m2);
+    }
+
     struct matrix *result = matrix_create_empty(m1->rows, m2->columns);
     for(unsigned int i = 0; i < m1->rows; i++) {
         for(unsigned int j = 0; j < m2->columns; j++) {
@@ -92,6 +107,10 @@ struct matrix *matrix_mul(const struct matrix * const m1, const struct matrix * 
 }
 struct matrix *matrix_mul_scalar(const struct complex s, const struct matrix * const m) {
     if(!m) return NULL;
+
+    if(cuda_enabled) {
+        return matrix_mul_scalar_cuda(s, m);
+    }
 
     struct matrix *result = matrix_create_empty(m->rows, m->columns);
     for(unsigned int i = 0; i < m->rows; i++) {
@@ -106,6 +125,10 @@ struct matrix *matrix_tensor_product(const struct matrix * const m1,
                                         const struct matrix * const m2) 
 {
     if(!m1 || !m2) return NULL;
+
+    if(cuda_enabled) {
+        return matrix_tensor_product_cuda(m1, m2);
+    }
 
     struct matrix *result = matrix_create_empty(m1->rows * m2->rows, 
                                                     m1->columns * m2->columns);
