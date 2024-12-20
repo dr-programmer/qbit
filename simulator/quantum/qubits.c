@@ -85,9 +85,9 @@ qm_result *quantum_state_measure_subsystem(const quantum_state * const q,
 {
     if(!q) return NULL;
 
-    // if(cuda_enabled) {
-    //     return quantum_state_measure_subsystem_cuda(q, start_system_index, end_system_index);
-    // }
+    if(cuda_enabled) {
+        return quantum_state_measure_subsystem_cuda(q, start_system_index, end_system_index);
+    }
 
 S
     #ifdef QUBITS_SHOW_SUBSYSTEM_MEASUREMENT

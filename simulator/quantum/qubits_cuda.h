@@ -4,6 +4,7 @@
 // Uncomment to enable the logs:
 // #define QUBITS_CUDA_SHOW_OPERATIONS
 // #define QUBITS_CUDA_SHOW_OPERATIONS_THOROUGH
+// #define QUBITS_CUDA_SHOW_KERNEL_OPERATIONS
 
 #ifdef __cplusplus
 extern "C" {
