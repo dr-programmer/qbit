@@ -316,7 +316,17 @@ struct dimensions expr_typecheck(struct expr * const e) {
     struct dimensions result = dimensions_create(0, 0);
 
     switch(e->kind) {
-        case EXPR_NAME: if(e->declaration) result = e->declaration->dimensions; break;
+        case EXPR_NAME: 
+            if(e->declaration) {
+                result = e->declaration->dimensions;
+                // The following allows the typechecker to infer the dimensions of a gate 
+                // created as a tensor product n times with itself. 
+                // If the expression is not inferrable without coderunning, 
+                // a default value of 1 is assigned as n.
+                e->complex_literal = e->declaration->value->complex_literal;
+                if(e->complex_literal.real == 0) e->complex_literal.real = 1;
+            }
+            break;
         case EXPR_COMPLEX_LITERAL: 
             e->reg = reg_create(e->complex_literal.real, e->complex_literal.real);
             result = dimensions_create(1, 1);
@@ -498,6 +508,9 @@ void decl_coderun(struct decl * const d) {
 
     decl_coderun(d->next);
 }
+// If called with NULL regs, the coderunnner will execute using Postorder traversal. 
+// Otherwise, it will execute *primarly* using Preorder traversal. 
+// ^~~~> * Some expressions require more complex handling. *
 struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
     if(!e) return NULL;
 
@@ -612,6 +625,17 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
                 );
             }
             break;
+        case EXPR_RANGE: S
+            left = expr_coderun(e->left, NULL);
+            right = expr_coderun(e->right, NULL);
+            e->reg = reg_create(
+                (int)INDEX(left, 0, 0).real, 
+                (int)INDEX(right, 0, 0).real
+            );
+            // printf(CYN"Range of the quantum state: "GRN"%d ... %d \n"RESET, 
+            //     e->reg.start, e->reg.end);
+            E
+            break;
         case EXPR_MEASURE: {
             qm_result *m_result = NULL;
             if(e->right == NULL || regs->rows <= 2) {
@@ -620,9 +644,21 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
                 result = m_result->state;
             }
             else {
+                if(e->right->kind == EXPR_RANGE) {
+                    expr_coderun(e->right, regs);
+                    e->reg = e->right->reg;
+                }
+                else if(e->right->kind != EXPR_COMPLEX_LITERAL) {
+                    struct matrix *measured_qubit = expr_coderun(e->right, NULL);
+                    e->reg = reg_create(
+                        (int)INDEX(measured_qubit, 0, 0).real, 
+                        (int)INDEX(measured_qubit, 0, 0).real
+                    );
+                }
+
                 unsigned int scope = (e->reg.end - e->reg.start + 1);
                 const unsigned int qubits_count = log2(regs->rows);
-                if(scope <= 0 || scope > qubits_count || e->reg.start > qubits_count) 
+                if(scope <= 0 || scope >= qubits_count || e->reg.start > qubits_count) 
                     goto WHOLE_SYSTEM_MEASUREMENT_CODERUNNER;
                 m_result = quantum_state_measure_subsystem(
                                            regs, 
@@ -643,6 +679,18 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
 
             result = NULL;
             if(e->right != NULL) {
+                if(e->right->kind == EXPR_RANGE) {
+                    expr_coderun(e->right, regs);
+                    e->reg = e->right->reg;
+                }
+                else if(e->right->kind != EXPR_COMPLEX_LITERAL) {
+                    struct matrix *measured_qubit = expr_coderun(e->right, NULL);
+                    e->reg = reg_create(
+                        (int)INDEX(measured_qubit, 0, 0).real, 
+                        (int)INDEX(measured_qubit, 0, 0).real
+                    );
+                }
+
                 const unsigned int qubits_count = log2(regs->rows);
 
                 const unsigned int preceding_qubits_count = e->reg.start;
@@ -915,16 +963,37 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                                         regs->name);
             }
             else {
-                unsigned int scope = (e->reg.end - e->reg.start + 1);
-                const unsigned int qubits_count = log2(regs->dimensions.rows);
-                if(scope <= 0 || scope > qubits_count || e->reg.start > qubits_count) 
-                    goto WHOLE_SYSTEM_MEASUREMENT_CODEGENERATOR;
-                fprintf(result_file, "qm_result *%s "
-                                    "= quantum_state_measure_subsystem(%s, %d, %d);\n", 
+                expr_codegen(e->right, regs);
+
+                char *start_name = NULL;
+                char *end_name = NULL;
+                if(e->right->kind == EXPR_RANGE) {
+                    start_name = e->right->left->name;
+                    end_name = e->right->right->name;
+                }
+                else {
+                    start_name = e->right->name;
+                    end_name = e->right->name;
+                }
+
+                fprintf(result_file, 
+                    "qm_result *%s = NULL;\n"
+                    "{\n"
+                    "const unsigned int start = INDEX(%s, 0, 0).real;\n"
+                    "const unsigned int end = INDEX(%s, 0, 0).real;\n"
+                    "const unsigned int scope = end - start + 1;\n"
+                    "const unsigned int qubits_count = log2(%s->rows);\n"
+                    "if(scope <= 0 || scope >= qubits_count || start > qubits_count) \n"
+                    "\t%s = quantum_state_measure(%s);\n"
+                    "else %s = quantum_state_measure_subsystem(%s, start, end);\n"
+                    "}\n",              e->name, 
+                                        start_name, 
+                                        end_name, 
+                                        regs->name, 
                                         e->name, 
                                         regs->name, 
-                                        e->reg.start, 
-                                        e->reg.end);
+                                        e->name, 
+                                        regs->name);
                 // regs->dimensions.rows /= systems;
             }
             regs->name = var_create();
@@ -957,6 +1026,7 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
                    in the generated C file with Q-SET instructions.
 
                 */
+                // ^^^ So grateful I did this :) ^^^
                 expr_codegen(e->right, regs);
                 char *start_name = NULL;
                 char *end_name = NULL;

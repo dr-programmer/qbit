@@ -491,7 +491,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  12
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   82
+#define YYLAST   84
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  32
@@ -556,7 +556,7 @@ static const yytype_int16 yyrline[] =
      113,   115,   117,   120,   122,   124,   126,   128,   131,   133,
      142,   145,   147,   157,   158,   159,   168,   177,   181,   199,
      205,   209,   211,   213,   217,   218,   221,   225,   227,   230,
-     231,   240,   241,   253,   255,   259,   271,   272,   275
+     231,   240,   241,   253,   255,   259,   264,   265,   268
 };
 #endif
 
@@ -593,7 +593,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-24)
+#define YYPACT_NINF (-23)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -607,15 +607,15 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       9,    -5,   -24,     0,    38,   -24,     9,    17,    30,    22,
-      20,     0,   -24,   -24,    22,   -24,    23,    40,   -24,    22,
-      22,    40,     3,    -1,    -2,    52,    -4,   -24,   -24,    25,
-      44,   -24,    31,   -24,    32,   -24,   -24,    56,    33,    50,
-      22,    22,   -24,    22,    22,    22,    22,    22,    22,    22,
-      22,   -24,    39,   -24,   -24,   -24,   -24,   -24,   -24,   -24,
-     -24,    52,    52,    -4,    -4,    -4,    -4,   -24,   -24,    11,
-      36,    44,    40,    57,    57,   -24,     5,    47,    39,   -24,
-     -24,    40,   -24,   -24,   -24,   -24
+      34,    -7,   -23,    -4,    23,   -23,    34,     7,    27,    32,
+      13,    -4,   -23,   -23,    32,   -23,    16,    37,   -23,    32,
+      32,    37,     2,     0,    14,     3,    -5,   -23,   -23,    17,
+      41,   -23,    24,   -23,    39,   -23,   -23,    51,    40,    47,
+      32,    32,   -23,    32,    32,    32,    32,    32,    32,    32,
+      32,   -23,    53,   -23,   -23,   -23,   -23,   -23,   -23,   -23,
+     -23,     3,     3,    -5,    -5,    -5,    -5,   -23,   -23,     1,
+      36,    41,    32,    58,    58,   -23,     4,    44,    53,   -23,
+     -23,    32,   -23,   -23,   -23,   -23
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -637,9 +637,9 @@ static const yytype_int8 yydefact[] =
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -24,   -24,    69,   -24,    54,   -21,   -24,   -23,    24,   -14,
-     -17,   -12,   -24,    66,   -24,     7,     1,    10,   -24,     8,
-     -24
+     -23,   -23,    68,   -23,    54,   -22,   -23,     5,    21,   -17,
+     -16,    -6,   -23,    66,   -23,     8,     6,    10,   -23,     9,
+     -23
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
@@ -655,28 +655,28 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      34,    39,    32,    40,    37,    35,    36,    17,    81,    43,
-      44,    18,     2,    49,    50,    19,     1,     8,     2,    18,
-      61,    62,    20,    21,     9,    22,    17,    41,    59,    60,
-      18,    70,    82,     3,    19,    67,    68,    72,    12,    14,
-      15,    20,    21,    17,    22,    30,    33,    18,    18,    52,
-      51,    19,    37,    55,    54,    76,    57,    70,    20,    69,
-      56,    22,    72,    78,    85,    45,    46,    47,    48,    63,
-      64,    65,    66,    58,    83,    13,    38,    31,    75,    84,
-      74,     0,    80
+      39,    34,    35,    36,    40,    37,    17,    81,    32,    18,
+      18,     2,    49,    50,    19,     8,    45,    46,    47,    48,
+       9,    20,    21,    12,    22,    43,    44,    72,    41,    14,
+      70,    82,    67,    68,    59,    60,    17,    15,    30,    33,
+      18,     1,    51,     2,    19,    18,    52,    54,    61,    62,
+      76,    20,    21,    37,    22,    56,    70,    17,     3,    85,
+      55,    18,    72,    57,    78,    19,    63,    64,    65,    66,
+      58,    83,    20,    69,    13,    22,    38,    31,     0,    75,
+      74,     0,     0,    80,    84
 };
 
 static const yytype_int8 yycheck[] =
 {
-      17,    22,    14,     4,    21,    19,    20,     4,     3,    11,
-      12,     8,     9,    17,    18,    12,     7,    22,     9,     8,
-      43,    44,    19,    20,    24,    22,     4,    28,    40,    41,
-       8,    52,    27,    24,    12,    49,    50,    26,     0,    22,
-      10,    19,    20,     4,    22,    25,    23,     8,     8,     5,
-      25,    12,    69,    21,    23,    72,    23,    78,    19,    20,
-       4,    22,    26,     6,    81,    13,    14,    15,    16,    45,
-      46,    47,    48,    23,    27,     6,    22,    11,    71,    78,
-      70,    -1,    74
+      22,    17,    19,    20,     4,    21,     4,     3,    14,     8,
+       8,     9,    17,    18,    12,    22,    13,    14,    15,    16,
+      24,    19,    20,     0,    22,    11,    12,    26,    28,    22,
+      52,    27,    49,    50,    40,    41,     4,    10,    25,    23,
+       8,     7,    25,     9,    12,     8,     5,    23,    43,    44,
+      72,    19,    20,    69,    22,     4,    78,     4,    24,    81,
+      21,     8,    26,    23,     6,    12,    45,    46,    47,    48,
+      23,    27,    19,    20,     6,    22,    22,    11,    -1,    71,
+      70,    -1,    -1,    74,    78
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -690,8 +690,8 @@ static const yytype_int8 yystos[] =
        4,    28,    44,    11,    12,    13,    14,    15,    16,    17,
       18,    25,     5,    47,    23,    21,     4,    23,    23,    43,
       43,    39,    39,    40,    40,    40,    40,    41,    41,    20,
-      37,    48,    26,    49,    49,    47,    42,    50,     6,    51,
-      51,     3,    27,    27,    48,    42
+      37,    48,    26,    49,    49,    47,    37,    50,     6,    51,
+      51,     3,    27,    27,    48,    37
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -1491,9 +1491,9 @@ yyreduce:
 #line 1492 "q_assembly/parser/parser.y.c"
     break;
 
-  case 43: /* subsystem: TOKEN_LSQBR number TOKEN_RSQBR  */
+  case 43: /* subsystem: TOKEN_LSQBR expr TOKEN_RSQBR  */
 #line 254 "q_assembly/parser/parser.y"
-                                { (yyval.expr) = expr_create_complex_literal((yyvsp[-1].complex), line); }
+                                { (yyval.expr) = (yyvsp[-1].expr); }
 #line 1498 "q_assembly/parser/parser.y.c"
     break;
 
@@ -1503,33 +1503,26 @@ yyreduce:
 #line 1504 "q_assembly/parser/parser.y.c"
     break;
 
-  case 45: /* range: number TOKEN_RANGE number  */
+  case 45: /* range: expr TOKEN_RANGE expr  */
 #line 260 "q_assembly/parser/parser.y"
-                                { 
-                                        (yyval.expr) = expr_create(
-                                                EXPR_RANGE, 
-                                                expr_create_complex_literal((yyvsp[-2].complex), line), 
-                                                expr_create_complex_literal((yyvsp[0].complex), line), 
-                                                line
-                                        ); 
-                                }
-#line 1517 "q_assembly/parser/parser.y.c"
+                                { (yyval.expr) = expr_create(EXPR_RANGE, (yyvsp[-2].expr), (yyvsp[0].expr), line); }
+#line 1510 "q_assembly/parser/parser.y.c"
     break;
 
   case 46: /* concurrent_gate: TOKEN_AND c_step  */
-#line 271 "q_assembly/parser/parser.y"
+#line 264 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = (yyvsp[0].expr); }
-#line 1523 "q_assembly/parser/parser.y.c"
+#line 1516 "q_assembly/parser/parser.y.c"
     break;
 
   case 47: /* concurrent_gate: %empty  */
-#line 272 "q_assembly/parser/parser.y"
+#line 265 "q_assembly/parser/parser.y"
                                 { (yyval.expr) = 0; }
-#line 1529 "q_assembly/parser/parser.y.c"
+#line 1522 "q_assembly/parser/parser.y.c"
     break;
 
   case 48: /* string: TOKEN_STRING_LITERAL  */
-#line 275 "q_assembly/parser/parser.y"
+#line 268 "q_assembly/parser/parser.y"
                                 { 
                                         char *temp = (char *)
                                                 smart_allocate(strlen(yytext), sizeof(char));
@@ -1537,11 +1530,11 @@ yyreduce:
                                         temp[strlen(temp)-1] = '\0';
                                         (yyval.str) = temp; 
                                 }
-#line 1541 "q_assembly/parser/parser.y.c"
+#line 1534 "q_assembly/parser/parser.y.c"
     break;
 
 
-#line 1545 "q_assembly/parser/parser.y.c"
+#line 1538 "q_assembly/parser/parser.y.c"
 
       default: break;
     }
@@ -1734,7 +1727,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 283 "q_assembly/parser/parser.y"
+#line 276 "q_assembly/parser/parser.y"
 
 
 void yyerror(char *s) {

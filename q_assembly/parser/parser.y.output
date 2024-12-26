@@ -66,10 +66,10 @@ Grammar
    40       | TOKEN_LESS
    41       | TOKEN_LESS subsystem concurrent_gate
 
-   42 subsystem: TOKEN_LSQBR number TOKEN_RSQBR
+   42 subsystem: TOKEN_LSQBR expr TOKEN_RSQBR
    43          | TOKEN_LSQBR range TOKEN_RSQBR
 
-   44 range: number TOKEN_RANGE number
+   44 range: expr TOKEN_RANGE expr
 
    45 concurrent_gate: TOKEN_AND c_step
    46                | ε
@@ -130,7 +130,7 @@ Nonterminals, with rules where they appear
         on right: 4 20
     expr <expr> (37)
         on left: 8
-        on right: 26 28 38 39
+        on right: 26 28 38 39 42 44
     algebra <expr> (38)
         on left: 9 10 11
         on right: 8 9 10
@@ -145,7 +145,7 @@ Nonterminals, with rules where they appear
         on right: 17 18 19 21 22
     number <complex> (42)
         on left: 27
-        on right: 23 24 25 42 44
+        on right: 23 24 25
     fields <expr> (43)
         on left: 28 29
         on right: 4 30 31 35
@@ -976,13 +976,23 @@ State 71
 
 State 72
 
-   42 subsystem: TOKEN_LSQBR • number TOKEN_RSQBR
+   42 subsystem: TOKEN_LSQBR • expr TOKEN_RSQBR
    43          | TOKEN_LSQBR • range TOKEN_RSQBR
 
+    TOKEN_SEPARATOR        shift, and go to state 17
     TOKEN_COMPLEX_LITERAL  shift, and go to state 18
+    TOKEN_MINUS            shift, and go to state 19
+    TOKEN_SQRT             shift, and go to state 20
+    TOKEN_LESS             shift, and go to state 21
+    TOKEN_LPAREN           shift, and go to state 22
 
-    number  go to state 76
-    range   go to state 77
+    expr      go to state 76
+    algebra   go to state 24
+    term      go to state 25
+    difactor  go to state 26
+    factor    go to state 27
+    number    go to state 28
+    range     go to state 77
 
 
 State 73
@@ -1016,8 +1026,8 @@ State 75
 
 State 76
 
-   42 subsystem: TOKEN_LSQBR number • TOKEN_RSQBR
-   44 range: number • TOKEN_RANGE number
+   42 subsystem: TOKEN_LSQBR expr • TOKEN_RSQBR
+   44 range: expr • TOKEN_RANGE expr
 
     TOKEN_RANGE  shift, and go to state 81
     TOKEN_RSQBR  shift, and go to state 82
@@ -1066,16 +1076,26 @@ State 80
 
 State 81
 
-   44 range: number TOKEN_RANGE • number
+   44 range: expr TOKEN_RANGE • expr
 
+    TOKEN_SEPARATOR        shift, and go to state 17
     TOKEN_COMPLEX_LITERAL  shift, and go to state 18
+    TOKEN_MINUS            shift, and go to state 19
+    TOKEN_SQRT             shift, and go to state 20
+    TOKEN_LESS             shift, and go to state 21
+    TOKEN_LPAREN           shift, and go to state 22
 
-    number  go to state 85
+    expr      go to state 85
+    algebra   go to state 24
+    term      go to state 25
+    difactor  go to state 26
+    factor    go to state 27
+    number    go to state 28
 
 
 State 82
 
-   42 subsystem: TOKEN_LSQBR number TOKEN_RSQBR •
+   42 subsystem: TOKEN_LSQBR expr TOKEN_RSQBR •
 
     $default  reduce using rule 42 (subsystem)
 
@@ -1096,6 +1116,6 @@ State 84
 
 State 85
 
-   44 range: number TOKEN_RANGE number •
+   44 range: expr TOKEN_RANGE expr •
 
     $default  reduce using rule 44 (range)

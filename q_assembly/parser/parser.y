@@ -250,21 +250,14 @@ c_step  : expr                  { $$ = expr_create(EXPR_APPLY_GATE, $1, 0, line)
         ;
 
 subsystem
-        : TOKEN_LSQBR number TOKEN_RSQBR
-                                { $$ = expr_create_complex_literal($2, line); }
+        : TOKEN_LSQBR expr TOKEN_RSQBR
+                                { $$ = $2; }
         | TOKEN_LSQBR range TOKEN_RSQBR
                                 { $$ = $2; }
         ;
 
-range   : number TOKEN_RANGE number
-                                { 
-                                        $$ = expr_create(
-                                                EXPR_RANGE, 
-                                                expr_create_complex_literal($1, line), 
-                                                expr_create_complex_literal($3, line), 
-                                                line
-                                        ); 
-                                }
+range   : expr TOKEN_RANGE expr
+                                { $$ = expr_create(EXPR_RANGE, $1, $3, line); }
         ;
 
 concurrent_gate
