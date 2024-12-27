@@ -1022,7 +1022,7 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
 
                    This is a version that will work even if in the future 
                    Q Assembly has support for runtime variable assignment.
-                   For now, it just gives more flexibility an ease of use
+                   For now, it just gives more flexibility and ease of use
                    in the generated C file with Q-SET instructions.
 
                 */
