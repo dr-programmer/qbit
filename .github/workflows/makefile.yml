@@ -30,5 +30,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Build the project
+      run: make
+
     - name: Run tests with CUDA
       run: make run-tests
