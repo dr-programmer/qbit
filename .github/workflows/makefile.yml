@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  github-hosted:
 
     runs-on: ubuntu-latest
 
@@ -20,8 +20,15 @@ jobs:
     - name: Build the project
       run: make
 
-    # - name: Run tests with CUDA
-    #   run: make run-tests
-
     - name: Run tests without CUDA
       run: make run-tests TEST_FLAGS=
+
+  TUF-hosted:
+
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run tests with CUDA
+      run: make run-tests
