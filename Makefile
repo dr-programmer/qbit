@@ -7,6 +7,7 @@ SRCS := $(shell find $(SRC_DIR) -name '*.c' -or -name '*.s' -or -name '*.l' -or 
 SRCS += $(shell find $(SRC_DIR) -name '*.cu')
 SRCS := $(filter-out $(SRC_DIR)/%.l.c $(SRC_DIR)/%.y.c, $(SRCS))
 SRCS := $(filter-out $(SRC_DIR)/%.qsm.c, $(SRCS))
+SRCS := $(sort $(SRCS))
 
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.c.o)
 OBJS := $(OBJS:$(SRC_DIR)/%.s=$(BUILD_DIR)/%.s.o)
@@ -46,7 +47,7 @@ $(BUILD_DIR)/%.cu.o: $(SRC_DIR)/%.cu
 	mkdir -p $(dir $@)
 	-nvcc $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-.PHONY: clean clean-all build-lib clean-lib
+.PHONY: clean clean-all build-lib clean-lib run-tests
 clean:
 	rm -f -r $(BUILD_DIR)
 
@@ -70,5 +71,23 @@ $(LIB): $(LIB_OBJ)
 
 clean-lib:
 	rm -f $(LIB)
+
+TESTS := $(shell find $(SRC_DIR)/q_assembly/test_cases -name '*.qsm')
+TESTS := $(subst $(SRC_DIR)/q_assembly/test_cases/,,$(TESTS))
+TESTS := $(sort $(TESTS))
+
+CUDA_REQ := test_8.qsm
+
+TEST_FLAGS := --cuda
+
+ifeq ($(TEST_FLAGS),)
+	TESTS := $(filter-out $(CUDA_REQ), $(TESTS))
+endif
+
+run-tests:
+	cd $(SRC_DIR)/q_assembly/test_cases; \
+	for test in $(TESTS); do \
+		../../$(BUILD_DIR)/$(TARGET_EXEC) $$test $(TEST_FLAGS); \
+	done
 
 -include $(DEPS)

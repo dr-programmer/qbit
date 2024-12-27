@@ -76,3 +76,20 @@ minus (
 }
     -> (H)^@2[0 ... 1]
     -> <[0 ... 1]
+
+num_qubits (
+    10 - 6
+)
+
+{
+    {|0>^@(num_qubits)}
+    {|0>}
+}
+    -> (H)^@(num_qubits)[0 ... (num_qubits) - 1]
+    -> (I)^@((num_qubits) + 1)
+    -> (I)^@(num_qubits) @ (I)
+    -> (I)[(num_qubits) - (num_qubits)]
+    -> (I)[2]
+    -> <[0 ... (num_qubits) - (num_qubits) + 1]
+    -> <[(num_qubits) - (num_qubits) + 1]
+    -> <[2]
