@@ -1,0 +1,27 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: apt-get install build-essential flex bison git nvidia-cuda-toolkit
+
+    - name: Build the project
+      run: make
+
+    - name: Run tests with CUDA
+      run: make run-tests
+
+    - name: Run tests without CUDA
+      run: make run-tests TEST_FLAGS=
