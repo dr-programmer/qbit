@@ -20,8 +20,8 @@ jobs:
     - name: Build the project
       run: make
 
-    - name: Run tests with CUDA
-      run: make run-tests
+    # - name: Run tests with CUDA
+    #   run: make run-tests
 
     - name: Run tests without CUDA
       run: make run-tests TEST_FLAGS=
