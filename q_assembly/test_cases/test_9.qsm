@@ -11,10 +11,8 @@ qubits_count (
     -> (H)^@(qubits_count)
     => superposition
     -> <
-    -> (I)^@((qubits_count) - 1) @ (I)
-    -> <[0 ... (qubits_count) - 3]
 
 {
     {(superposition)}
 }
-    -> <[0 ... 3]
+    -> <
