@@ -17,6 +17,10 @@ typedef enum {
     EXPR_FIELD, 
     EXPR_REGISTER, 
 
+    EXPR_ALIAS, 
+    EXPR_CIRCUIT_ALIAS, 
+    EXPR_DUMMY, 
+
     EXPR_AND, 
 
     EXPR_ADD, 

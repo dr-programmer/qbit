@@ -14,6 +14,7 @@ LETTERS [a-zA-Z]
 (" "|\t)
 "\n"        {line++;}
 \-\>        {return TOKEN_NEXT;}
+\=\>        {return TOKEN_ALIAS;}
 \+          {return TOKEN_PLUS;}
 \-          {return TOKEN_MINUS;}
 \*          {return TOKEN_MUL;}
