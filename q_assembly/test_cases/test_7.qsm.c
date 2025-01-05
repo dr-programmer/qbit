@@ -243,18 +243,281 @@ if(proceeding_qubits_count) t91 =
 quantum_state *t92 = matrix_mul(t91, t86);
 if(t92->columns != 1) 
 	t92 = matrix_mul(t92, matrix_get_adjoint(t91));
-qm_result *t93 = quantum_state_measure_subsystem(t92, 4, 4);
-quantum_state *t94 = t93->state;
+struct matrix *t94 = matrix_create_empty(1, 1);
+INDEX(t94, 0, 0) = complex_create(4.000000, 0.000000);
+qm_result *t93 = NULL;
+{
+const unsigned int start = INDEX(t94, 0, 0).real;
+const unsigned int end = INDEX(t94, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t92->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t93 = quantum_state_measure(t92);
+else t93 = quantum_state_measure_subsystem(t92, start, end);
+}
+quantum_state *t95 = t93->state;
 printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t93->value);
-qm_result *t95 = quantum_state_measure_subsystem(t94, 0, 2);
-quantum_state *t96 = t95->state;
-printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t95->value);
-qm_result *t97 = quantum_state_measure_subsystem(t96, 4, 4);
-quantum_state *t98 = t97->state;
-printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t97->value);
-qm_result *t99 = quantum_state_measure(t98);
-quantum_state *t100 = t99->state;
-printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t99->value);
+struct matrix *t97 = matrix_create_empty(1, 1);
+INDEX(t97, 0, 0) = complex_create(0.000000, 0.000000);
+struct matrix *t98 = matrix_create_empty(1, 1);
+INDEX(t98, 0, 0) = complex_create(2.000000, 0.000000);
+qm_result *t96 = NULL;
+{
+const unsigned int start = INDEX(t97, 0, 0).real;
+const unsigned int end = INDEX(t98, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t95->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t96 = quantum_state_measure(t95);
+else t96 = quantum_state_measure_subsystem(t95, start, end);
+}
+quantum_state *t99 = t96->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t96->value);
+struct matrix *t101 = matrix_create_empty(1, 1);
+INDEX(t101, 0, 0) = complex_create(4.000000, 0.000000);
+qm_result *t100 = NULL;
+{
+const unsigned int start = INDEX(t101, 0, 0).real;
+const unsigned int end = INDEX(t101, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t99->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t100 = quantum_state_measure(t99);
+else t100 = quantum_state_measure_subsystem(t99, start, end);
+}
+quantum_state *t102 = t100->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t100->value);
+qm_result *t103 = quantum_state_measure(t102);
+quantum_state *t104 = t103->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t103->value);
+qubit *t105 = quantum_state_create(0, 2);
+struct matrix *t106 = matrix_create_empty(1, 1);
+INDEX(t106, 0, 0) = complex_create(3.000000, 0.000000);
+struct matrix *t107 = matrix_tensor_product_n_times(t105, INDEX(t106, 0, 0).real);
+qubit *t108 = quantum_state_create(1, 2);
+struct matrix *t109 = matrix_create_empty(1, 1);
+INDEX(t109, 0, 0) = complex_create(2.000000, 0.000000);
+struct matrix *t110 = matrix_tensor_product_n_times(t108, INDEX(t109, 0, 0).real);
+qubit *t111 = quantum_state_create(0, 2);
+quantum_state *t112 = matrix_tensor_product(t110, t111);
+quantum_state *t113 = matrix_tensor_product(t107, t112);
+struct matrix *t115 = matrix_create_empty(1, 1);
+INDEX(t115, 0, 0) = complex_create(2.000000, 0.000000);
+struct matrix *t116 = matrix_create_empty(1, 1);
+INDEX(t116, 0, 0) = complex_create(3.000000, 0.000000);
+qm_result *t114 = NULL;
+{
+const unsigned int start = INDEX(t115, 0, 0).real;
+const unsigned int end = INDEX(t116, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t113->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t114 = quantum_state_measure(t113);
+else t114 = quantum_state_measure_subsystem(t113, start, end);
+}
+quantum_state *t117 = t114->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t114->value);
+struct matrix *t119 = matrix_create_empty(1, 1);
+INDEX(t119, 0, 0) = complex_create(5.000000, 0.000000);
+qm_result *t118 = NULL;
+{
+const unsigned int start = INDEX(t119, 0, 0).real;
+const unsigned int end = INDEX(t119, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t117->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t118 = quantum_state_measure(t117);
+else t118 = quantum_state_measure_subsystem(t117, start, end);
+}
+quantum_state *t120 = t118->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t118->value);
+qubit *t121 = quantum_state_create(0, 2);
+qubit *t122 = quantum_state_create(0, 2);
+qubit *t123 = quantum_state_create(0, 2);
+quantum_state *t124 = matrix_tensor_product(t122, t123);
+quantum_state *t125 = matrix_tensor_product(t121, t124);
+struct matrix *t126 = matrix_create_empty(1, 1);
+INDEX(t126, 0, 0) = complex_create(2.000000, 0.000000);
+struct matrix *t127 = matrix_tensor_product_n_times(H, INDEX(t126, 0, 0).real);
+struct matrix *t128 = matrix_create_empty(1, 1);
+INDEX(t128, 0, 0) = complex_create(0.000000, 0.000000);
+struct matrix *t129 = matrix_create_empty(1, 1);
+INDEX(t129, 0, 0) = complex_create(1.000000, 0.000000);
+quantum_gate *t130 = NULL;
+{
+const unsigned int qubits_count = log2(t125->rows);
+const unsigned int preceding_qubits_count = INDEX(t128, 0, 0).real;
+const unsigned int measured_qubits_count = 
+	(INDEX(t129, 0, 0).real - INDEX(t128, 0, 0).real) + 1;
+const unsigned int proceeding_qubits_count = 
+	qubits_count - (INDEX(t129, 0, 0).real + 1);
+if(preceding_qubits_count) t130 = 
+	quantum_gate_create(pow(2, preceding_qubits_count));
+if(t130 == NULL) t130 = t127;
+else t130 = matrix_tensor_product(t130, t127);
+if(proceeding_qubits_count) t130 = 
+	matrix_tensor_product(t130, 
+		quantum_gate_create(pow(2, proceeding_qubits_count))
+	);
+}
+quantum_state *t131 = matrix_mul(t130, t125);
+if(t131->columns != 1) 
+	t131 = matrix_mul(t131, matrix_get_adjoint(t130));
+struct matrix *t133 = matrix_create_empty(1, 1);
+INDEX(t133, 0, 0) = complex_create(0.000000, 0.000000);
+struct matrix *t134 = matrix_create_empty(1, 1);
+INDEX(t134, 0, 0) = complex_create(1.000000, 0.000000);
+qm_result *t132 = NULL;
+{
+const unsigned int start = INDEX(t133, 0, 0).real;
+const unsigned int end = INDEX(t134, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t131->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t132 = quantum_state_measure(t131);
+else t132 = quantum_state_measure_subsystem(t131, start, end);
+}
+quantum_state *t135 = t132->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t132->value);
+struct matrix *t136 = matrix_create_empty(1, 1);
+INDEX(t136, 0, 0) = complex_create(10.000000, 0.000000);
+struct matrix *t137 = matrix_create_empty(1, 1);
+INDEX(t137, 0, 0) = complex_create(6.000000, 0.000000);
+struct matrix *t138 = matrix_sub(t136, t137);
+quantum_gate *num_qubits = t138;
+qubit *t139 = quantum_state_create(0, 2);
+struct matrix *t140 = matrix_tensor_product_n_times(t139, INDEX(num_qubits, 0, 0).real);
+qubit *t141 = quantum_state_create(0, 2);
+quantum_state *t142 = matrix_tensor_product(t140, t141);
+struct matrix *t143 = matrix_tensor_product_n_times(H, INDEX(num_qubits, 0, 0).real);
+struct matrix *t144 = matrix_create_empty(1, 1);
+INDEX(t144, 0, 0) = complex_create(0.000000, 0.000000);
+struct matrix *t145 = matrix_create_empty(1, 1);
+INDEX(t145, 0, 0) = complex_create(1.000000, 0.000000);
+struct matrix *t146 = matrix_sub(num_qubits, t145);
+quantum_gate *t147 = NULL;
+{
+const unsigned int qubits_count = log2(t142->rows);
+const unsigned int preceding_qubits_count = INDEX(t144, 0, 0).real;
+const unsigned int measured_qubits_count = 
+	(INDEX(t146, 0, 0).real - INDEX(t144, 0, 0).real) + 1;
+const unsigned int proceeding_qubits_count = 
+	qubits_count - (INDEX(t146, 0, 0).real + 1);
+if(preceding_qubits_count) t147 = 
+	quantum_gate_create(pow(2, preceding_qubits_count));
+if(t147 == NULL) t147 = t143;
+else t147 = matrix_tensor_product(t147, t143);
+if(proceeding_qubits_count) t147 = 
+	matrix_tensor_product(t147, 
+		quantum_gate_create(pow(2, proceeding_qubits_count))
+	);
+}
+quantum_state *t148 = matrix_mul(t147, t142);
+if(t148->columns != 1) 
+	t148 = matrix_mul(t148, matrix_get_adjoint(t147));
+struct matrix *t149 = matrix_create_empty(1, 1);
+INDEX(t149, 0, 0) = complex_create(1.000000, 0.000000);
+struct matrix *t150 = matrix_add(num_qubits, t149);
+struct matrix *t151 = matrix_tensor_product_n_times(I, INDEX(t150, 0, 0).real);
+quantum_state *t152 = matrix_mul(t151, t148);
+if(t152->columns != 1) 
+	t152 = matrix_mul(t152, matrix_get_adjoint(t151));
+struct matrix *t153 = matrix_tensor_product_n_times(I, INDEX(num_qubits, 0, 0).real);
+struct matrix *t154 = matrix_tensor_product(t153, I);
+quantum_state *t155 = matrix_mul(t154, t152);
+if(t155->columns != 1) 
+	t155 = matrix_mul(t155, matrix_get_adjoint(t154));
+struct matrix *t156 = matrix_sub(num_qubits, num_qubits);
+quantum_gate *t157 = NULL;
+{
+const unsigned int qubits_count = log2(t155->rows);
+const unsigned int preceding_qubits_count = INDEX(t156, 0, 0).real;
+const unsigned int measured_qubits_count = 
+	(INDEX(t156, 0, 0).real - INDEX(t156, 0, 0).real) + 1;
+const unsigned int proceeding_qubits_count = 
+	qubits_count - (INDEX(t156, 0, 0).real + 1);
+if(preceding_qubits_count) t157 = 
+	quantum_gate_create(pow(2, preceding_qubits_count));
+if(t157 == NULL) t157 = I;
+else t157 = matrix_tensor_product(t157, I);
+if(proceeding_qubits_count) t157 = 
+	matrix_tensor_product(t157, 
+		quantum_gate_create(pow(2, proceeding_qubits_count))
+	);
+}
+quantum_state *t158 = matrix_mul(t157, t155);
+if(t158->columns != 1) 
+	t158 = matrix_mul(t158, matrix_get_adjoint(t157));
+struct matrix *t159 = matrix_create_empty(1, 1);
+INDEX(t159, 0, 0) = complex_create(2.000000, 0.000000);
+quantum_gate *t160 = NULL;
+{
+const unsigned int qubits_count = log2(t158->rows);
+const unsigned int preceding_qubits_count = INDEX(t159, 0, 0).real;
+const unsigned int measured_qubits_count = 
+	(INDEX(t159, 0, 0).real - INDEX(t159, 0, 0).real) + 1;
+const unsigned int proceeding_qubits_count = 
+	qubits_count - (INDEX(t159, 0, 0).real + 1);
+if(preceding_qubits_count) t160 = 
+	quantum_gate_create(pow(2, preceding_qubits_count));
+if(t160 == NULL) t160 = I;
+else t160 = matrix_tensor_product(t160, I);
+if(proceeding_qubits_count) t160 = 
+	matrix_tensor_product(t160, 
+		quantum_gate_create(pow(2, proceeding_qubits_count))
+	);
+}
+quantum_state *t161 = matrix_mul(t160, t158);
+if(t161->columns != 1) 
+	t161 = matrix_mul(t161, matrix_get_adjoint(t160));
+struct matrix *t163 = matrix_create_empty(1, 1);
+INDEX(t163, 0, 0) = complex_create(0.000000, 0.000000);
+struct matrix *t164 = matrix_sub(num_qubits, num_qubits);
+struct matrix *t165 = matrix_create_empty(1, 1);
+INDEX(t165, 0, 0) = complex_create(1.000000, 0.000000);
+struct matrix *t166 = matrix_add(t164, t165);
+qm_result *t162 = NULL;
+{
+const unsigned int start = INDEX(t163, 0, 0).real;
+const unsigned int end = INDEX(t166, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t161->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t162 = quantum_state_measure(t161);
+else t162 = quantum_state_measure_subsystem(t161, start, end);
+}
+quantum_state *t167 = t162->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t162->value);
+struct matrix *t169 = matrix_sub(num_qubits, num_qubits);
+struct matrix *t170 = matrix_create_empty(1, 1);
+INDEX(t170, 0, 0) = complex_create(1.000000, 0.000000);
+struct matrix *t171 = matrix_add(t169, t170);
+qm_result *t168 = NULL;
+{
+const unsigned int start = INDEX(t171, 0, 0).real;
+const unsigned int end = INDEX(t171, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t167->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t168 = quantum_state_measure(t167);
+else t168 = quantum_state_measure_subsystem(t167, start, end);
+}
+quantum_state *t172 = t168->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t168->value);
+struct matrix *t174 = matrix_create_empty(1, 1);
+INDEX(t174, 0, 0) = complex_create(2.000000, 0.000000);
+qm_result *t173 = NULL;
+{
+const unsigned int start = INDEX(t174, 0, 0).real;
+const unsigned int end = INDEX(t174, 0, 0).real;
+const unsigned int scope = end - start + 1;
+const unsigned int qubits_count = log2(t172->rows);
+if(scope <= 0 || scope >= qubits_count || start > qubits_count) 
+	t173 = quantum_state_measure(t172);
+else t173 = quantum_state_measure_subsystem(t172, start, end);
+}
+quantum_state *t175 = t173->state;
+printf(CYN"Classical bit representation: "GRN"%d \n"RESET, t173->value);
 E
 return 0;
 }

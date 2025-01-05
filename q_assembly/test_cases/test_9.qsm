@@ -1,0 +1,18 @@
+load ("include/gates.qsm")
+
+qubits_count (
+    6
+)
+
+{
+    {|0>^@((qubits_count) / 2)}
+    {|1>^@((qubits_count) / 2)}
+}
+    -> (H)^@(qubits_count)
+    => superposition
+    -> <
+
+{
+    {(superposition)}
+}
+    -> <

@@ -133,7 +133,7 @@ void expr_print(const struct expr * const e, const int tabs) {
                                 expr_print(e->right, tabs);
                             }
                             break;
-        case EXPR_CIRCUIT_STEP: printf(" -> ");
+        case EXPR_CIRCUIT_STEP: printf(" -> "); 
                             expr_print(e->left, 0); 
                             if(e->right) {
                                 printf("\n");
@@ -156,6 +156,20 @@ void expr_print(const struct expr * const e, const int tabs) {
                             break;
         case EXPR_RANGE: expr_print(e->left, -1); printf(" ... "); 
                                 expr_print(e->right, -1); break;
+        case EXPR_CIRCUIT_ALIAS: printf(" => "); 
+                            expr_print(e->left, 0); 
+                            if(e->right) {
+                                printf("\n");
+                                expr_print(e->right, tabs);
+                            }
+                            break;
+        case EXPR_ALIAS: printf("%s", e->name); 
+                            if(e->right) {
+                                printf("[");
+                                expr_print(e->right, -1);
+                                printf("]");
+                            }
+                            break;
     }
 }
 
@@ -274,6 +288,8 @@ void expr_resolve(struct expr * const e) {
         expr_resolve(e->left);
         expr_resolve(e->right);
     }
+
+    if(e->kind == EXPR_ALIAS) decl_resolve(e->declaration);
 }
 
 struct dimensions dimensions_create(int rows, int columns) {
@@ -291,6 +307,7 @@ void decl_typecheck(struct decl * const d) {
     dimensions = expr_typecheck(d->value);
     expr_typecheck(d->circuit);
     if(d->name) {
+        // Check if the declaration is in field form.
         if(dimensions.rows == 0) d->dimensions = get_gate_dimensions(dimensions);
         else d->dimensions = dimensions;
     }
@@ -319,12 +336,7 @@ struct dimensions expr_typecheck(struct expr * const e) {
         case EXPR_NAME: 
             if(e->declaration) {
                 result = e->declaration->dimensions;
-                // The following allows the typechecker to infer the dimensions of a gate 
-                // created as a tensor product n times with itself. 
-                // If the expression is not inferrable without coderunning, 
-                // a default value of 1 is assigned as n.
                 e->complex_literal = e->declaration->value->complex_literal;
-                if(e->complex_literal.real == 0) e->complex_literal.real = 1;
             }
             break;
         case EXPR_COMPLEX_LITERAL: 
@@ -444,8 +456,13 @@ struct dimensions expr_typecheck(struct expr * const e) {
                 result = left;
             }
             else {
-                result.rows = pow(left.rows, (int)e->right->complex_literal.real);
-                result.columns = pow(left.columns, (int)e->right->complex_literal.real);
+                // The following gives a default value (left dimension) to the result 
+                // in case the right operand is not a complex literal.
+                if(e->right->complex_literal.real == 0) result = left;
+                else {
+                    result.rows = pow(left.rows, (int)e->right->complex_literal.real);
+                    result.columns = pow(left.columns, (int)e->right->complex_literal.real);
+                }
             }
             break;
         case EXPR_RANGE: 
@@ -469,6 +486,8 @@ struct dimensions expr_typecheck(struct expr * const e) {
                                                 1);
             break;
         }
+        case EXPR_ALIAS: decl_typecheck(e->declaration); break;
+        case EXPR_DUMMY: result = dimensions_create(2, 1); break;
     }
 
     e->dimensions = result;
@@ -735,6 +754,13 @@ struct matrix *expr_coderun(struct expr * const e, quantum_state * const regs) {
             result = expr_coderun(e->right, new_regs);
             break;
         }
+        case EXPR_ALIAS: 
+            e->declaration->operator = regs;
+            break;
+        case EXPR_CIRCUIT_ALIAS: 
+            expr_coderun(e->left, regs);
+            result = expr_coderun(e->right, regs);
+            break;
     }
 
     return result;
@@ -1095,6 +1121,15 @@ void expr_codegen(struct expr * const e, struct expr * const regs) {
             // be changed to the new register after the measurement.
             // That's why we don't need to check for this case.
             if(e->right) expr_codegen(e->right, regs);
+            break;
+        case EXPR_ALIAS: 
+            fprintf(result_file, "quantum_state *%s = %s;\n", 
+                                        e->declaration->name, 
+                                        regs->name);
+            break;
+        case EXPR_CIRCUIT_ALIAS: 
+            expr_codegen(e->left, regs);
+            expr_codegen(e->right, regs);
             break;
     }
 }

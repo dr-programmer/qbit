@@ -32,7 +32,7 @@ extern char *global_name_of_starting_file;
 
 %type <decl> program decl_list decl
 %type <expr> expr algebra term difactor factor fields next_expr registers reg circuit c_step
-%type <expr> subsystem range concurrent_gate
+%type <expr> c_alias subsystem range concurrent_gate
 %type <str> name string
 %type <complex> number
 
@@ -41,6 +41,7 @@ extern char *global_name_of_starting_file;
 %token TOKEN_SEPARATOR
 
 %token TOKEN_NEXT
+%token TOKEN_ALIAS
 
 %token TOKEN_AND
 
@@ -224,6 +225,8 @@ reg     : TOKEN_LCRBR fields TOKEN_RCRBR
 
 circuit : TOKEN_NEXT c_step circuit
                                 { $$ = expr_create(EXPR_CIRCUIT_STEP, $2, $3, line); }
+        | TOKEN_ALIAS c_alias circuit
+                                { $$ = expr_create(EXPR_CIRCUIT_ALIAS, $2, $3, line); }
         |                       { $$ = 0; }
         ;
 
@@ -263,6 +266,24 @@ range   : expr TOKEN_RANGE expr
 concurrent_gate
         : TOKEN_AND c_step      { $$ = $2; }
         |                       { $$ = 0; }
+        ;
+
+c_alias : name                  { 
+                                        $$ = expr_create(EXPR_ALIAS, 0, 0, line);
+                                        $$->name = $1;
+                                        $$->declaration = decl_create($1, 0, 0, 0, line);
+                                        $$->declaration->value = 
+                                                        expr_create(EXPR_DUMMY, 0, 0, line);
+                                        $$->declaration->value->name = "$alias"; 
+                                }
+        | name subsystem        { 
+                                        $$ = expr_create(EXPR_ALIAS, 0, $2, line);
+                                        $$->name = $1;
+                                        $$->declaration = decl_create($1, 0, 0, 0, line);
+                                        $$->declaration->value = 
+                                                        expr_create(EXPR_DUMMY, 0, 0, line);
+                                        $$->declaration->value->name = "$alias[]"; 
+                                }
         ;
 
 string  : TOKEN_STRING_LITERAL  { 
